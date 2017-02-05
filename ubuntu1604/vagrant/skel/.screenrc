@@ -11,5 +11,5 @@ hardstatus string '%{= kg}[ %{G}%H%{g} ][%{w}%= %?%-Lw%?%{r}(%{W}%n*%f %t%?(%u)%
 defscrollback 1000
 startup_message off
 
-# Make SSH agent forwarding work (see ".bash_profile")...
+# Make SSH agent forwarding work (see ".bash_profile" or ".profile")...
 setenv SSH_AUTH_SOCK "$HOME/.ssh/ssh_auth_sock"
