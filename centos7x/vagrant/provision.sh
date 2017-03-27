@@ -66,6 +66,9 @@ if sudo test -x /etc/cron.daily/mlocate; then
     sudo /etc/cron.daily/mlocate
 fi
 
+# Some SELinux tools may complain if this file is missing...
+sudo touch /etc/selinux/targeted/contexts/files/file_contexts.local
+
 # If another (file) provisioner made the host user's credentials available
 # to us (see the "Vagrantfile" for details), let it use "scp" and stuff...
 if [ -f /tmp/id_rsa.pub ]; then
