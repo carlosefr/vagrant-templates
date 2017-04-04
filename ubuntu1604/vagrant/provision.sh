@@ -36,6 +36,9 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install netcat-openbsd
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge netcat-traditional
 
+# Minimize the number of running daemons...
+sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge \
+    lxcfs snapd open-iscsi mdadm accountsservice
 
 # Set a local timezone (the default for Ubuntu boxes is GMT)...
 sudo timedatectl set-timezone "Europe/Lisbon"
