@@ -12,6 +12,8 @@ fi
 
 echo "provision.sh: Customizing the base system..."
 
+DISTRO_CODENAME=$(lsb_release -cs)
+
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq update
 
 #
@@ -30,7 +32,8 @@ fi
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
     avahi-daemon mlocate rsync lsof iotop htop \
-    ntpdate pv tree vim screen tmux ltrace strace
+    ntpdate pv tree vim screen tmux ltrace strace \
+    curl apt-transport-https
 
 # This is just a matter of preference...
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install netcat-openbsd
@@ -76,6 +79,27 @@ fi
 # Make "vagrant ssh" sessions more comfortable by tweaking the
 # configuration of some system utilities (eg. bash, vim, tmux)...
 rsync -a --exclude=.DS_Store ~/shared/vagrant/skel/ ~/
+
+
+echo "provision.sh: Configuring custom repositories..."
+
+# NGINX mainline gives us an updated (but production-ready) version...
+curl -fsSL "https://nginx.org/keys/nginx_signing.key" | sudo apt-key add -
+sudo tee "/etc/apt/sources.list.d/nginx-mainline.list" >/dev/null <<EOF
+deb https://nginx.org/packages/mainline/ubuntu/ ${DISTRO_CODENAME} nginx
+deb-src https://nginx.org/packages/mainline/ubuntu/ ${DISTRO_CODENAME} nginx
+EOF
+
+# For container-based projects, we'll want to use the official Docker packages...
+sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install bridge-utils
+curl -fsSL "https://download.docker.com/linux/ubuntu/gpg" | sudo apt-key add -
+sudo tee "/etc/apt/sources.list.d/docker-stable.list" >/dev/null <<EOF
+deb [arch=amd64] https://download.docker.com/linux/ubuntu ${DISTRO_CODENAME} stable
+EOF
+
+# No packages from the above repositories have been installed,
+# but prepare things for that to (maybe) happen further below...
+sudo DEBIAN_FRONTEND=noninteractive apt-get -qq update
 
 
 echo "provision.sh: Running project-specific actions..."

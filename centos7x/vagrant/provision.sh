@@ -81,11 +81,33 @@ fi
 rsync -a --exclude=.DS_Store ~/shared/vagrant/skel/ ~/
 
 
-echo "provision.sh: Running project-specific actions..."
+echo "provision.sh: Configuring custom repositories..."
 
 # IUS gives us recent (but stable) packages...
 sudo yum -q -y --nogpgcheck install "https://centos${CENTOS_RELEASE}.iuscommunity.org/ius-release.rpm" || true
 sudo rpm --import "/etc/pki/rpm-gpg/IUS-COMMUNITY-GPG-KEY"
+
+# NGINX mainline gives us an updated (but production-ready) version...
+sudo rpm --import "https://nginx.org/keys/nginx_signing.key"
+sudo tee "/etc/yum.repos.d/nginx-mainline.repo" >/dev/null <<EOF
+[nginx-mainline]
+name=NGINX Mainline
+baseurl=https://nginx.org/packages/mainline/centos/\$releasever/\$basearch/
+gpgcheck=1
+enabled=1
+EOF
+
+# For container-based projects, we'll want to use the official Docker packages...
+sudo yum -q -y install bridge-utils
+sudo rpm --import "https://download.docker.com/linux/centos/gpg"
+sudo yum-config-manager --add-repo "https://download.docker.com/linux/centos/docker-ce.repo"
+
+# No packages from the above repositories have been installed,
+# but prepare things for that to (maybe) happen further below...
+sudo yum -q -y makecache fast
+
+
+echo "provision.sh: Running project-specific actions..."
 
 # Install extra packages needed for the project...
 sudo yum -q -y install \
