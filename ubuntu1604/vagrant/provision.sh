@@ -41,7 +41,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge netcat-traditional
 
 # Minimize the number of running daemons...
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge \
-    lxcfs snapd open-iscsi mdadm accountsservice
+    lxcfs snapd open-iscsi mdadm accountsservice acpid
 
 # Set a local timezone (the default for Ubuntu boxes is GMT)...
 sudo timedatectl set-timezone "Europe/Lisbon"
