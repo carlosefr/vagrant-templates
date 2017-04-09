@@ -24,10 +24,10 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq update
 # Also, the "vagrant-reload" plugin may be used to ensure the VM is restarted
 # immediately after provisioning, but it fails sometimes and I don't know why.
 #
-if [ "$SYSTEM_UPDATES" == "true" ]; then
-    sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install upgrade
+if [ "$INSTALL_SYSTEM_UPDATES" == "true" ]; then
+    sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y upgrade
+    sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y dist-upgrade
     sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y autoremove
-    echo "*** Updates have been installed. The guest VM should be restarted ASAP. ***" >&2
 fi
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
@@ -113,6 +113,10 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
 
 
 echo "provision.sh: Done!"
+
+if [ "$INSTALL_SYSTEM_UPDATES" == "true" ]; then
+    echo "*** Updates (may) have been installed. The guest VM should be restarted ASAP. ***" >&2
+fi
 
 
 # vim: set expandtab ts=4 sw=4:

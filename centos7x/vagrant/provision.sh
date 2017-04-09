@@ -31,9 +31,8 @@ sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-${CENTOS_RELEASE}"
 # Also, the "vagrant-reload" plugin may be used to ensure the VM is restarted
 # immediately after provisioning, but it fails sometimes and I don't know why.
 #
-if [ "$SYSTEM_UPDATES" == "true" ]; then
+if [ "$INSTALL_SYSTEM_UPDATES" == "true" ]; then
     sudo yum -q -y update
-    echo "*** Updates have been installed. The guest VM should be restarted ASAP. ***" >&2
 fi
 
 sudo yum -q -y install \
@@ -118,6 +117,10 @@ sudo yum -q -y install \
 
 
 echo "provision.sh: Done!"
+
+if [ "$INSTALL_SYSTEM_UPDATES" == "true" ]; then
+    echo "*** Updates (may) have been installed. The guest VM should be restarted ASAP. ***" >&2
+fi
 
 
 # vim: set expandtab ts=4 sw=4:
