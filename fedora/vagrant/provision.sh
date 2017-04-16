@@ -12,7 +12,13 @@ fi
 
 echo "provision.sh: Customizing the base system..."
 
-sudo dnf -q -y --refresh makecache
+# Ensure DNF chooses a decent mirror, otherwise things may be *very* slow...
+if ! grep -q "fastestmirror=true" /etc/dnf/dnf.conf; then
+    sudo tee -a /etc/dnf/dnf.conf >/dev/null <<< "fastestmirror=true"
+fi
+
+sudo dnf -q clean all
+sudo dnf -q makecache
 
 #
 # Updating the system requires a restart. If the "vagrant-vbguest" plugin is
