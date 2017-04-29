@@ -41,23 +41,23 @@ sudo yum -q -y install \
     sysstat perf zip unzip
 
 # Minor cleanup...
-sudo systemctl stop tuned firewalld
-sudo systemctl -q disable tuned firewalld
+sudo systemctl stop tuned.service firewalld.service
+sudo systemctl -q disable tuned.service firewalld.service
 
 # Set a local timezone (the default for CentOS boxes is EDT)...
 sudo timedatectl set-timezone "Europe/Lisbon"
 
-sudo systemctl -q enable chronyd
-sudo systemctl start chronyd
+sudo systemctl -q enable chronyd.service
+sudo systemctl start chronyd.service
 
 # This gives us an easly reachable ".local" name for the VM...
-sudo systemctl -q enable avahi-daemon
-sudo systemctl start avahi-daemon
+sudo systemctl -q enable avahi-daemon.service
+sudo systemctl start avahi-daemon.service
 
 # Prevent locale from being forwarded from the host, causing issues...
 if sudo grep -q '^AcceptEnv\s.*LC_' /etc/ssh/sshd_config; then
     sudo sed -i 's/^\(AcceptEnv\s.*LC_\)/#\1/' /etc/ssh/sshd_config
-    sudo systemctl restart sshd
+    sudo systemctl restart sshd.service
 fi
 
 # Generate the initial "locate" DB...

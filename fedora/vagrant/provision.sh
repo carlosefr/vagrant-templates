@@ -41,14 +41,16 @@ sudo dnf -q -y install \
 
 # For these VMs, prefer a simpler time daemon...
 sudo dnf -q -y remove chrony || true
-sudo systemctl -q --now enable systemd-timesyncd.service
+sudo systemctl -q enable systemd-timesyncd.service
+sudo systemctl -q start systemd-timesyncd.service
 
 # Set a local timezone (default is UTC)...
 sudo timedatectl set-timezone "Europe/Lisbon"
 echo "VM local timezone: $(timedatectl | awk '/[Tt]ime\s+zone:/ {print $3}')"
 
 # This gives us an easly reachable ".local" name for the VM...
-sudo systemctl -q --now enable avahi-daemon.service
+sudo systemctl -q enable avahi-daemon.service
+sudo systemctl -q start avahi-daemon.service
 echo "VM available from the host at: ${HOSTNAME}.local"
 
 # Prevent locale from being forwarded from the host, causing issues...
