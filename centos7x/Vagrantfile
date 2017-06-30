@@ -4,10 +4,14 @@
 #
 
 
+require 'json'
+
+
 # This is the minimum customization necessary but, to tailor this configuration
 # to a specific project, you should also edit the "vagrant/provision.sh" script...
 vm_name = "Generic CentOS 7.x"
 vm_hostname = "vagrant-centos7x"
+vm_size = {"cpus" => 1, "memory" => 1024}
 
 
 # The box is assumed to be readily usable by default, but all available
@@ -23,6 +27,13 @@ end
 
 # Location of the external files used by this script...
 vagrant_assets = File.dirname(__FILE__) + "/vagrant"
+
+
+# Someone may need to (locally) override the VM size for some specific task...
+vm_size_override = File.dirname(__FILE__) + "/.vagrant_size.json"
+if File.exists?(vm_size_override)
+    vm_size = JSON.parse(File.read(vm_size_override))
+end
 
 
 class FixGuestAdditions < VagrantVbguest::Installers::RedHat
@@ -77,8 +88,8 @@ Vagrant.configure(2) do |config|
         vm.name = vm_name
         vm.gui = false
 
-        vm.memory = 1024
-        vm.cpus = 1
+        vm.memory = vm_size["memory"]
+        vm.cpus = vm_size["cpus"]
 
         # Install guest additions automatically...
         override.vbguest.auto_update = true
