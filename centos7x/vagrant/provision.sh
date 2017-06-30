@@ -28,9 +28,6 @@ sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-${CENTOS_RELEASE}"
 # installed and the updates included the kernel package, this will trigger a
 # reinstallation of the VirtualBox Guest Tools for the new kernel.
 #
-# Also, the "vagrant-reload" plugin may be used to ensure the VM is restarted
-# immediately after provisioning, but it fails sometimes and I don't know why.
-#
 if [ "$INSTALL_SYSTEM_UPDATES" == "true" ]; then
     sudo yum -q -y update
 fi
