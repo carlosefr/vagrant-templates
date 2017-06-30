@@ -39,6 +39,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge netcat-traditional
 
 # Set a local timezone (the default for Debian boxes is GMT)...
 sudo timedatectl set-timezone "Europe/Lisbon"
+echo "VM local timezone: $(timedatectl | awk '/[Tt]ime +zone:/ {print $3}')"
 
 sudo systemctl -q enable systemd-timesyncd
 sudo systemctl start systemd-timesyncd
@@ -46,6 +47,7 @@ sudo systemctl start systemd-timesyncd
 # This gives us an easly reachable ".local" name for the VM...
 sudo systemctl -q enable avahi-daemon 2>/dev/null
 sudo systemctl start avahi-daemon
+echo "VM available from the host at: ${HOSTNAME}.local"
 
 # Prevent locale from being forwarded from the host, causing issues...
 if sudo grep -q '^AcceptEnv\s.*LC_' /etc/ssh/sshd_config; then
@@ -66,13 +68,13 @@ fi
 # If another (file) provisioner made the host user's credentials available
 # to us (see the "Vagrantfile" for details), let it use "scp" and stuff...
 if [ -f /tmp/id_rsa.pub ]; then
-    cat /tmp/id_rsa.pub >> ~/.ssh/authorized_keys
+    cat /tmp/id_rsa.pub >> "${HOME}/.ssh/authorized_keys"
     rm -f /tmp/id_rsa.pub
 fi
 
 # Make "vagrant ssh" sessions more comfortable by tweaking the
 # configuration of some system utilities (eg. bash, vim, tmux)...
-rsync -a --exclude=.DS_Store ~/shared/vagrant/skel/ ~/
+rsync -a --exclude=.DS_Store "${HOME}/shared/vagrant/skel/" "${HOME}/"
 
 
 echo "provision.sh: Configuring custom repositories..."

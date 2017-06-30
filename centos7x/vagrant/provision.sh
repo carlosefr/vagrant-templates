@@ -43,6 +43,7 @@ sudo systemctl -q disable tuned.service firewalld.service
 
 # Set a local timezone (the default for CentOS boxes is EDT)...
 sudo timedatectl set-timezone "Europe/Lisbon"
+echo "VM local timezone: $(timedatectl | awk '/[Tt]ime\s+zone:/ {print $3}')"
 
 sudo systemctl -q enable chronyd.service
 sudo systemctl start chronyd.service
@@ -50,6 +51,7 @@ sudo systemctl start chronyd.service
 # This gives us an easly reachable ".local" name for the VM...
 sudo systemctl -q enable avahi-daemon.service
 sudo systemctl start avahi-daemon.service
+echo "VM available from the host at: ${HOSTNAME}.local"
 
 # Prevent locale from being forwarded from the host, causing issues...
 if sudo grep -q '^AcceptEnv\s.*LC_' /etc/ssh/sshd_config; then
@@ -68,13 +70,13 @@ sudo touch /etc/selinux/targeted/contexts/files/file_contexts.local
 # If another (file) provisioner made the host user's credentials available
 # to us (see the "Vagrantfile" for details), let it use "scp" and stuff...
 if [ -f /tmp/id_rsa.pub ]; then
-    cat /tmp/id_rsa.pub >> ~/.ssh/authorized_keys
+    cat /tmp/id_rsa.pub >> "${HOME}/.ssh/authorized_keys"
     rm -f /tmp/id_rsa.pub
 fi
 
 # Make "vagrant ssh" sessions more comfortable by tweaking the
 # configuration of some system utilities (eg. bash, vim, tmux)...
-rsync -a --exclude=.DS_Store ~/shared/vagrant/skel/ ~/
+rsync -a --exclude=.DS_Store "${HOME}/shared/vagrant/skel/" "${HOME}/"
 
 
 echo "provision.sh: Configuring custom repositories..."

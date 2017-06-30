@@ -62,13 +62,13 @@ sudo systemctl start mlocate-updatedb.service
 # If another (file) provisioner made the host user's credentials available
 # to us (see the "Vagrantfile" for details), let it use "scp" and stuff...
 if [ -f /tmp/id_rsa.pub ]; then
-    cat /tmp/id_rsa.pub >> ~/.ssh/authorized_keys
+    cat /tmp/id_rsa.pub >> "${HOME}/.ssh/authorized_keys"
     rm -f /tmp/id_rsa.pub
 fi
 
 # Make "vagrant ssh" sessions more comfortable by tweaking the
 # configuration of some system utilities (eg. bash, vim, tmux)...
-rsync -a --exclude=.DS_Store ~/shared/vagrant/skel/ ~/
+rsync -a --exclude=.DS_Store "${HOME}/shared/vagrant/skel/" "${HOME}/"
 
 
 echo "provision.sh: Configuring custom repositories..."

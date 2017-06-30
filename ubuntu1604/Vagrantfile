@@ -34,12 +34,8 @@ Vagrant.configure(2) do |config|
     config.vm.box = "ubuntu/xenial64"
     config.vm.hostname = vm_hostname
 
-    # The Debian box defaults to using an rsynced folder...
+    # We prefer the shared folder to be inside the user's home (below)...
     config.vm.synced_folder ".", "/vagrant", disabled: true
-
-    # Because Ubuntu manages to produce broken builds that persist for days...
-    # config.vm.provision "shell", inline: "sudo ln -nsf ../run/resolvconf/resolv.conf /etc/resolv.conf",
-    #                              privileged: false, name: "fix resolv.conf symlink"
 
     # Support git operations inside the VM. The file provisioner requires files to exist,
     # which in this case is a good thing as it prevents commits attributed to wrong users...

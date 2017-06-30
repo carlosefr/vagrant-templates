@@ -36,6 +36,9 @@ if File.exists?(vm_size_override)
 end
 
 
+# This workaround is needed during the brief period when a new CentOS point
+# release becomes available but the CentOS base box hasn't been updated yet.
+# It's also required if we choose to stick with some specific point release.
 class FixGuestAdditions < VagrantVbguest::Installers::RedHat
     def dependencies
         packages = super
@@ -61,7 +64,6 @@ Vagrant.configure(2) do |config|
 
     # The CentOS box defaults to using rsynced folders...
     config.vm.synced_folder ".", "/vagrant", disabled: true
-    config.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
 
     # Support git operations inside the VM. The file provisioner requires files to exist,
     # which in this case is a good thing as it prevents commits attributed to wrong users...
