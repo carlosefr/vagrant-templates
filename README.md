@@ -14,6 +14,18 @@ You'll need [VirtualBox](https://www.virtualbox.org/) and [Vagrant](https://www.
 
 ## Notes
 
+### Local Customization
+
+The default VM size is defined in the `Vagrantfile` but, sometimes, it's useful to locally override these settings without affecting other users of the same repo. Do this by creating a `.vagrant_size.json` next to the `Vagrantfile` with the following (example) contents:
+```json
+{
+    "cpus": 2,
+    "memory": 4096
+}
+```
+
+### Guest Additions
+
 By default, the `vagrant-vbguest` plugin tries to install/update the VirtualBox Guest Additions on every `vagrant up`. I find this annoying and recommend you to disable this behavior by adding something like the following to your `~/.vagrant.d/Vagrantfile`:
 ```ruby
 Vagrant.configure(2) do |config|
@@ -28,8 +40,17 @@ end
 ```
 The templates that need to install/update the VirtualBox Guest Additions already (re)enable `auto_update` explicitly.
 
-On my older Macbook Pro the (VM) clocks drift quite significantly with paravirtualization enabled, and I never quite figured out how to fix it. On newer machines this is no longer the case so, if you're bothered by the fact that all of these templates disable paravirtualization, just remove the following line:
+### Clock Drift
+
+On my older Macbook Pro the (VM) clocks drift quite significantly with paravirtualization enabled, and I never quite figured out how to fix it. If you notice this happening, just add the following to your `~/.vagrant.d/Vagrantfile`:
 ```ruby
-vm.customize ["modifyvm", :id, "--paravirtprovider", "legacy"]
+Vagrant.configure(2) do |config|
+    ...
+
+    config.vm.provider "virtualbox" do |v, override|
+        v.customize ["modifyvm", :id, "--paravirtprovider", "legacy"]
+    end
+
+    ...
+end
 ```
-For these use-cases, I never noticed any performance degradation, but still...
