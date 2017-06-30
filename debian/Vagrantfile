@@ -7,10 +7,15 @@
 require 'json'
 
 
+# Provisioning might need updating for different Debian
+# releases, see the "provision.sh" script for details...
+debian_release = 9
+
+
 # This is the minimum customization necessary but, to tailor this configuration
 # to a specific project, you should also edit the "vagrant/provision.sh" script...
-vm_name = "Generic Debian 8.x"
-vm_hostname = "vagrant-deb8x"
+vm_name = "Generic Debian #{debian_release}.x"
+vm_hostname = "vagrant-deb#{debian_release}x"
 vm_size = {"cpus" => 1, "memory" => 1024}
 
 
@@ -37,7 +42,9 @@ end
 
 
 Vagrant.configure(2) do |config|
-    config.vm.box = "debian/jessie64"
+    debian_codenames = {8 => "jessie", 9 => "stretch"}  # ...currently supported.
+
+    config.vm.box = "debian/#{debian_codenames[debian_release]}64"
     config.vm.hostname = vm_hostname
 
     # The Debian box defaults to using an rsynced folder...
