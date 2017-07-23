@@ -9,7 +9,7 @@ require 'json'
 
 # Provisioning might need updating for different Fedora
 # releases, see the "provision.sh" script for details...
-fedora_release = 25
+fedora_release = 26
 
 # This is the minimum customization necessary but, to tailor this configuration
 # to a specific project, you should also edit the "vagrant/provision.sh" script...
