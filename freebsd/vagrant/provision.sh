@@ -58,6 +58,7 @@ if [ -f /tmp/id_rsa.pub ]; then
     fi
 
     cat "${HOME}/.ssh/.authorized_keys.vagrant" /tmp/id_rsa.pub > "${HOME}/.ssh/authorized_keys"
+    chmod 0600 "${HOME}/.ssh/authorized_keys"
     rm -f /tmp/id_rsa.pub
 fi
 
