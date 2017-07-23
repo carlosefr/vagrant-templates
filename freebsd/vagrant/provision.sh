@@ -32,7 +32,7 @@ sudo service ntpd start || true
 sudo service vboxservice restart
 
 # Avahi gives us an easly reachable ".local" name for the VM...
-sudo pkg install -q -y dbus avahi-app avahi-libdns
+sudo pkg install -q -y dbus avahi-app avahi-libdns nss_mdns
 sudo sed -i '' -E 's/^ *hosts: +files +dns/hosts: files mdns dns/' /etc/nsswitch.conf
 
 if ! grep -q '^ *dbus_enable="YES"' /etc/rc.conf; then
