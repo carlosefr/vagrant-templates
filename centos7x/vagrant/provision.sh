@@ -70,8 +70,17 @@ sudo touch /etc/selinux/targeted/contexts/files/file_contexts.local
 # If another (file) provisioner made the host user's credentials available
 # to us (see the "Vagrantfile" for details), let it use "scp" and stuff...
 if [ -f /tmp/id_rsa.pub ]; then
-    cat /tmp/id_rsa.pub >> "${HOME}/.ssh/authorized_keys"
+    pushd "${HOME}/.ssh" >/dev/null
+
+    if [ ! -f .authorized_keys.vagrant ]; then
+        cp authorized_keys .authorized_keys.vagrant
+    fi
+
+    cat .authorized_keys.vagrant /tmp/id_rsa.pub > authorized_keys
+    chmod 0600 authorized_keys
     rm -f /tmp/id_rsa.pub
+
+    popd >/dev/null
 fi
 
 # Make "vagrant ssh" sessions more comfortable by tweaking the
