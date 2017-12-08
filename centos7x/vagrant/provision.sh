@@ -35,7 +35,7 @@ fi
 sudo yum -q -y install \
     avahi chrony mlocate net-tools yum-utils lsof iotop \
     htop nmap-ncat ntpdate pv tree vim tmux ltrace strace \
-    sysstat perf zip unzip
+    sysstat perf zip unzip bind-utils
 
 # Minor cleanup...
 sudo systemctl stop tuned.service firewalld.service

@@ -34,7 +34,7 @@ sudo dnf -q -y upgrade vim-minimal
 sudo dnf -q -y install \
     avahi mlocate lsof iotop htop nmap-ncat \
     ntpdate pv tree vim tmux ltrace strace \
-    sysstat perf zip unzip
+    sysstat perf zip unzip bind-utils
 
 # For these VMs, prefer a simpler time daemon...
 sudo dnf -q -y remove chrony || true

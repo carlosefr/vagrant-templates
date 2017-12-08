@@ -30,7 +30,7 @@ fi
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
     avahi-daemon mlocate rsync lsof iotop htop \
     ntpdate pv tree vim screen tmux ltrace strace \
-    curl apt-transport-https
+    curl apt-transport-https dnsutils
 
 # This is just a matter of preference...
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install netcat-openbsd
