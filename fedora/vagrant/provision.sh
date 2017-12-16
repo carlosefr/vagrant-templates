@@ -12,6 +12,8 @@ fi
 
 echo "provision.sh: Customizing the base system..."
 
+FEDORA_RELEASE=$(rpm -q --queryformat '%{VERSION}' fedora-release)
+
 # Ensure DNF chooses a decent mirror, otherwise things may be *very* slow...
 if ! grep -q "fastestmirror=true" /etc/dnf/dnf.conf; then
     sudo tee -a /etc/dnf/dnf.conf >/dev/null <<< "fastestmirror=true"
@@ -96,6 +98,13 @@ EOF
 sudo dnf -q -y install bridge-utils
 sudo rpm --import "https://download.docker.com/linux/fedora/gpg"
 sudo dnf config-manager --add-repo "https://download.docker.com/linux/fedora/docker-ce.repo"
+
+# If this version of Fedora isn't supported yet, use packages intended for the previous one...
+if ! curl -sSL "https://download.docker.com/linux/fedora/${FEDORA_RELEASE}/source/stable/Packages/" | grep -q "\.src\.rpm"; then
+    sudo sed -i "s|/fedora/\$releasever|/fedora/$((FEDORA_RELEASE-1))|g" /etc/yum.repos.d/docker-ce.repo
+else  # ...reverse on reprovision.
+    sudo sed -i "s|/fedora/$((FEDORA_RELEASE-1))|/fedora/\$releasever|g" /etc/yum.repos.d/docker-ce.repo
+fi
 
 # No packages from the above repositories have been installed,
 # but prepare things for that to (maybe) happen further below...
