@@ -19,7 +19,8 @@ if ! grep -q "fastestmirror=true" /etc/dnf/dnf.conf; then
     sudo tee -a /etc/dnf/dnf.conf >/dev/null <<< "fastestmirror=true"
 fi
 
-sudo dnf -q clean all
+sudo rm -f /var/cache/dnf/fastestmirror.cache
+sudo dnf -q clean expire-cache
 sudo dnf -q makecache
 
 #
@@ -51,6 +52,9 @@ echo "VM local timezone: $(timedatectl | awk '/[Tt]ime\s+zone:/ {print $3}')"
 sudo systemctl -q enable avahi-daemon.service
 sudo systemctl -q start avahi-daemon.service
 echo "VM available from the host at: ${HOSTNAME}.local"
+
+# Minimize running daemons (not using remote authentication)...
+sudo dnf -q -y remove sssd-client || true
 
 # Prevent locale from being forwarded from the host, causing issues...
 if sudo grep -q '^AcceptEnv\s.*LC_' /etc/ssh/sshd_config; then

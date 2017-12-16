@@ -45,9 +45,9 @@ end
 # installing dependencies for the guest additions may take a *very* long time...
 class TweakGuestAdditions < VagrantVbguest::Installers::Fedora
     def install_dependencies_cmd
-        # Also, remove "bzip2" to avoid conflict warnings (it's already installed anyway)...
         'grep -q fastestmirror=true /etc/dnf/dnf.conf || echo fastestmirror=true >>/etc/dnf/dnf.conf; ' \
-        'dnf -q clean all; dnf -q makecache; dnf -y install ' + dependencies.sub('bzip2', '')
+        'rm -f /var/cache/dnf/fastestmirror.cache; dnf -q clean expire-cache; ' \
+        'dnf -y install ' + dependencies.gsub(/(bzip2|perl|dkms)/, '')
     end
 end
 
