@@ -4,8 +4,8 @@
 #
 
 
-if [ "$(id -u)" != "$(id -u ubuntu)" ]; then
-    echo "The provisioning script must be run as the \"ubuntu\" user!" >&2
+if [ "$(id -u)" != "$(id -u vagrant)" ]; then
+    echo "The provisioning script must be run as the \"vagrant\" user!" >&2
     exit 1
 fi
 
