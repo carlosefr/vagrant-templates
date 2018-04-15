@@ -7,28 +7,22 @@
 require 'json'
 
 
-# Provisioning might need updating for different Debian
+# Provisioning might need updating for different Ubuntu
 # releases, see the "provision.sh" script for details...
-debian_release = 9
-debian_codenames = {8 => "jessie", 9 => "stretch"}  # ...currently supported.
+ubuntu_release = "16.04"
+ubuntu_codenames = {"16.04" => "xenial"}  # ...currently supported.
 
 
 # This is the minimum customization necessary but, to tailor this configuration
 # to a specific project, you should also edit the "vagrant/provision.sh" script...
-vm_name = "Generic Debian #{debian_release}.x"
-vm_hostname = "vagrant-deb#{debian_release}x"
+vm_name = "Generic Ubuntu #{ubuntu_release} (#{ubuntu_codenames[ubuntu_release]})"
+vm_hostname = "vagrant-ubuntu-#{ubuntu_codenames[ubuntu_release]}"
 vm_size = {"cpus" => 1, "memory" => 1024}
 
 
 # The box is assumed to be readily usable by default, but all available
 # system updates can be installed during provisioning, if necessary...
 install_system_updates = false
-
-
-# Required for shared folders support with VirtualBox...
-unless Vagrant.has_plugin?("vagrant-vbguest")
-    raise 'vagrant-vbguest is not installed: type vagrant plugin install vagrant-vbguest'
-end
 
 
 # Location of the external files used by this script...
@@ -43,10 +37,10 @@ end
 
 
 Vagrant.configure(2) do |config|
-    config.vm.box = "debian/#{debian_codenames[debian_release]}64"
+    config.vm.box = "ubuntu/#{ubuntu_codenames[ubuntu_release]}64"
     config.vm.hostname = vm_hostname
 
-    # The Debian box defaults to using an rsynced folder...
+    # We prefer the shared folder to be inside the user's home (below)...
     config.vm.synced_folder ".", "/vagrant", disabled: true
 
     # Support git operations inside the VM. The file provisioner requires files to exist,
@@ -72,8 +66,9 @@ Vagrant.configure(2) do |config|
         vm.memory = vm_size["memory"]
         vm.cpus = vm_size["cpus"]
 
-        # Install guest additions automatically...
-        override.vbguest.auto_update = true
+        # Override the console log location set by the base box...
+        vm.customize ["modifyvm", :id, "--uart1", "0x3F8", "4" ]
+        vm.customize ["modifyvm", :id, "--uartmode1", "file", File.join(vagrant_assets, "console.log")]
 
         # Expose the VM to the host instead of forwarding many ports individually
         # for complex projects. The provisioning script will setup Avahi/mDNS to

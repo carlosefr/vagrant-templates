@@ -7,16 +7,27 @@
 require 'json'
 
 
+# Provisioning might need updating for different CentOS
+# releases, see the "provision.sh" script for details...
+centos_release = 7
+
+
 # This is the minimum customization necessary but, to tailor this configuration
 # to a specific project, you should also edit the "vagrant/provision.sh" script...
-vm_name = "Generic Ubuntu 16.04"
-vm_hostname = "vagrant-ubuntu1604"
+vm_name = "Generic CentOS #{centos_release}.x"
+vm_hostname = "vagrant-centos-#{centos_release}x"
 vm_size = {"cpus" => 1, "memory" => 1024}
 
 
 # The box is assumed to be readily usable by default, but all available
 # system updates can be installed during provisioning, if necessary...
 install_system_updates = false
+
+
+# Required for shared folders support with VirtualBox...
+unless Vagrant.has_plugin?("vagrant-vbguest")
+    raise 'vagrant-vbguest is not installed: type vagrant plugin install vagrant-vbguest'
+end
 
 
 # Location of the external files used by this script...
@@ -30,11 +41,33 @@ if File.exists?(vm_size_override)
 end
 
 
+# This workaround is needed during the brief period when a new CentOS point
+# release becomes available but the CentOS base box hasn't been updated yet.
+# It's also required if we choose to stick with some specific point release.
+class FixGuestAdditions < VagrantVbguest::Installers::RedHat
+    def dependencies
+        packages = super
+
+        # If there's no "kernel-devel" package matching the running kernel in the
+        # default repositories, then the base box we're using doesn't match the
+        # latest CentOS release anymore and we have to look for it in the archives...
+        if communicate.test('test -f /etc/centos-release && ! yum -q info kernel-devel-`uname -r` &>/dev/null')
+            env.ui.warn("[#{vm.name}] Looking for the CentOS 'kernel-devel' package in the release archives...")
+            packages.sub!('kernel-devel-`uname -r`', 'http://mirror.centos.org/centos' \
+                                                     '/`grep -Po \'\b\d+\.[\d.]+\b\' /etc/centos-release`' \
+                                                     '/{os,updates}/`arch`/Packages/kernel-devel-`uname -r`.rpm')
+        end
+
+        packages
+    end
+end
+
+
 Vagrant.configure(2) do |config|
-    config.vm.box = "ubuntu/xenial64"
+    config.vm.box = "centos/#{centos_release}"
     config.vm.hostname = vm_hostname
 
-    # We prefer the shared folder to be inside the user's home (below)...
+    # The CentOS box defaults to using rsynced folders...
     config.vm.synced_folder ".", "/vagrant", disabled: true
 
     # Support git operations inside the VM. The file provisioner requires files to exist,
@@ -60,9 +93,9 @@ Vagrant.configure(2) do |config|
         vm.memory = vm_size["memory"]
         vm.cpus = vm_size["cpus"]
 
-        # Override the console log location set by the base box...
-        vm.customize ["modifyvm", :id, "--uart1", "0x3F8", "4" ]
-        vm.customize ["modifyvm", :id, "--uartmode1", "file", File.join(vagrant_assets, "console.log")]
+        # Install guest additions automatically...
+        override.vbguest.auto_update = true
+        override.vbguest.installer = FixGuestAdditions  # ...see fix above.
 
         # Expose the VM to the host instead of forwarding many ports individually
         # for complex projects. The provisioning script will setup Avahi/mDNS to
