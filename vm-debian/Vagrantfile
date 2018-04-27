@@ -69,7 +69,7 @@ Vagrant.configure(2) do |config|
         # Install guest additions automatically (if not already builtin)...
         if !config.vm.box.match(/^[^\/]+\/contrib-/)
             if !Vagrant.has_plugin?("vagrant-vbguest")
-                raise 'the \'vagrant-vbguest\' plugin is not installed'
+                raise "the 'vagrant-vbguest' plugin is not installed"
             end
 
             override.vbguest.auto_update = true
