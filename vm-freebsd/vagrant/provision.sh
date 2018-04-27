@@ -12,9 +12,11 @@ fi
 
 echo "provision.sh: Customizing the base system..."
 
+sudo pkg update -qf
+
 sudo pkg install -q -y \
     htop lsof ltrace bash curl \
-    pv tree screen tmux vim-lite
+    pv tree screen tmux vim-console
 
 # Set a local timezone (the default for FreeBSD boxes is UTC)...
 sudo tzsetup "Europe/Lisbon"
