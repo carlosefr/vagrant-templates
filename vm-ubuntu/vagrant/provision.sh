@@ -16,7 +16,7 @@ DISTRO_CODENAME=$(lsb_release -cs)
 
 # Ordered list of Ubuntu releases, first being the latest, for later checks...
 DISTRO_CODENAMES=($(curl -sSL "http://releases.ubuntu.com/" \
-                        | perl -lne '/<a href=.(\w+)..>Ubuntu\s+\d{2}\.\d{2}(?:\.\d+)?\s+(?:LTS|\()/i && print $1' \
+                        | perl -lne '/<a href=.(\w+)..>Ubuntu\s+\d{2}\.\d{2}(?:\.\d+)?\s+(?:LTS|\()/i && print lc($1)' \
                         | paste -s -))
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq update
