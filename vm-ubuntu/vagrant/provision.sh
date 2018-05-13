@@ -15,9 +15,8 @@ echo "provision.sh: Customizing the base system..."
 DISTRO_CODENAME=$(lsb_release -cs)
 
 # Ordered list of Ubuntu releases, first being the latest, for later checks...
-DISTRO_CODENAMES=($(curl -sSL "http://releases.ubuntu.com/" \
-                        | perl -lne '/<a href=.(\w+)..>Ubuntu\s+\d{2}\.\d{2}(?:\.\d+)?\s+(?:LTS|\()/i && print lc($1)' \
-                        | paste -s -))
+DISTRO_CODENAMES=($(curl -sSL http://releases.ubuntu.com/ \
+                        | perl -lne 'print lc($1) if /href=[^>]+>\s*Ubuntu\s+[0-9.]+\s+(?:LTS\s+)?\(\s*([a-z]+)\s+/i'))
 
 # Getting the above list by parsing some random webpage is brittle and may fail in the future...
 if [ "${#DISTRO_CODENAMES[@]}" -lt 2 ]; then
