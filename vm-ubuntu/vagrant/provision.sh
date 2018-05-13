@@ -14,6 +14,11 @@ echo "provision.sh: Customizing the base system..."
 
 DISTRO_CODENAME=$(lsb_release -cs)
 
+# Ordered list of Ubuntu releases, first being the latest, for later checks...
+DISTRO_CODENAMES=($(curl -sSL "http://releases.ubuntu.com/" \
+                        | perl -lne '/<a href=.(\w+)..>Ubuntu\s+\d{2}\.\d{2}(?:\.\d+)?\s+(?:LTS|\()/i && print $1' \
+                        | paste -s -))
+
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq update
 
 #
@@ -105,11 +110,24 @@ Pin-Priority: 1001
 EOF
 
 
+#
 # For container-based projects, we'll want to use the official Docker packages...
+#
+# Use packages for the previous Ubuntu release if the current one isn't supported yet.
+# Docker upstream takes a while to catch up, as they don't rebuild existing packages.
+#
+DOCKER_POOL="https://download.docker.com/linux/ubuntu/dists/${DISTRO_CODENAME}/pool/stable/amd64/"
+DOCKER_DISTRO_CODENAME="$DISTRO_CODENAME"
+
+if [ "$DISTRO_CODENAME" = "${DISTRO_CODENAMES[0]}" ] && ! curl -sSL "$DOCKER_POOL" | grep -q "\.deb"; then
+    DOCKER_DISTRO_CODENAME="${DISTRO_CODENAMES[1]}"
+    echo "No Docker packages for '${DISTRO_CODENAME}' release, using '${DOCKER_DISTRO_CODENAME}' instead." >&2
+fi
+
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install bridge-utils
 curl -fsSL "https://download.docker.com/linux/ubuntu/gpg" | sudo apt-key add -
 sudo tee "/etc/apt/sources.list.d/docker-stable.list" >/dev/null <<EOF
-deb [arch=amd64] https://download.docker.com/linux/ubuntu ${DISTRO_CODENAME} stable
+deb [arch=amd64] https://download.docker.com/linux/ubuntu ${DOCKER_DISTRO_CODENAME} stable
 EOF
 
 sudo tee "/etc/apt/preferences.d/docker-pinning" >/dev/null <<EOF
