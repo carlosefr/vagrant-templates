@@ -19,6 +19,11 @@ DISTRO_CODENAMES=($(curl -sSL "http://releases.ubuntu.com/" \
                         | perl -lne '/<a href=.(\w+)..>Ubuntu\s+\d{2}\.\d{2}(?:\.\d+)?\s+(?:LTS|\()/i && print lc($1)' \
                         | paste -s -))
 
+# Getting the above list by parsing some random webpage is brittle and may fail in the future...
+if [ "${#DISTRO_CODENAMES[@]}" -lt 10 ]; then
+    echo "ERROR: Couldn't fetch the list of Ubuntu releases. Provisioning might not complete successfully." >&2
+fi
+
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq update
 
 #
