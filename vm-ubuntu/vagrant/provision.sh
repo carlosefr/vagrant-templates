@@ -98,12 +98,26 @@ deb https://nginx.org/packages/mainline/ubuntu/ ${DISTRO_CODENAME} nginx
 deb-src https://nginx.org/packages/mainline/ubuntu/ ${DISTRO_CODENAME} nginx
 EOF
 
+sudo tee "/etc/apt/preferences.d/nginx-pinning" >/dev/null <<EOF
+Package: *
+Pin: origin "nginx.org"
+Pin-Priority: 1001
+EOF
+
+
 # For container-based projects, we'll want to use the official Docker packages...
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install bridge-utils
 curl -fsSL "https://download.docker.com/linux/ubuntu/gpg" | sudo apt-key add -
 sudo tee "/etc/apt/sources.list.d/docker-stable.list" >/dev/null <<EOF
 deb [arch=amd64] https://download.docker.com/linux/ubuntu ${DISTRO_CODENAME} stable
 EOF
+
+sudo tee "/etc/apt/preferences.d/docker-pinning" >/dev/null <<EOF
+Package: *
+Pin: origin "download.docker.com"
+Pin-Priority: 1001
+EOF
+
 
 # No packages from the above repositories have been installed,
 # but prepare things for that to (maybe) happen further below...
