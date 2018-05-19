@@ -82,6 +82,9 @@ Vagrant.configure(2) do |config|
         vm.memory = vm_size["memory"]
         vm.cpus = vm_size["cpus"]
 
+        # Resolve names using the host's stub resolver (useful for VPNs)...
+        vm.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+
         # Install guest additions automatically...
         override.vbguest.auto_update = true
         override.vbguest.installer = TweakGuestAdditions  # ...see above.
