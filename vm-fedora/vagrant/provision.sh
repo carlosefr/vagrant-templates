@@ -14,6 +14,9 @@ echo "provision.sh: Customizing the base system..."
 
 readonly FEDORA_RELEASE="$(rpm -q --queryformat '%{VERSION}' fedora-release)"
 
+# Fix DNS breakage on reprovisioning (sometimes)...
+sudo systemctl restart network
+
 # Ensure DNF chooses a decent mirror, otherwise things may be *very* slow...
 if ! grep -q "fastestmirror=true" /etc/dnf/dnf.conf; then
     sudo tee -a /etc/dnf/dnf.conf >/dev/null <<< "fastestmirror=true"
@@ -23,26 +26,12 @@ sudo rm -f /var/cache/dnf/fastestmirror.cache
 sudo dnf -q clean expire-cache
 sudo dnf -q makecache
 
-#
-# Updating the system requires a restart. If the "vagrant-vbguest" plugin is
-# installed and the updates included the kernel package, this will trigger a
-# reinstallation of the VirtualBox Guest Tools for the new kernel.
-#
-if [[ "${INSTALL_SYSTEM_UPDATES:-false}" == "true" ]]; then
-    sudo dnf -q -y --setopt=deltarpm=false upgrade
-fi
-
 # This is required to avoid a conflict with "vim" below... :(
 sudo dnf -q -y upgrade vim-minimal
 sudo dnf -q -y install \
     avahi mlocate lsof iotop htop nmap-ncat \
     ntpdate pv tree vim tmux ltrace strace \
     sysstat perf zip unzip bind-utils
-
-# For these VMs, prefer a simpler time daemon...
-sudo dnf -q -y remove chrony || true
-sudo systemctl -q enable systemd-timesyncd.service
-sudo systemctl -q start systemd-timesyncd.service
 
 # Set a local timezone (default is UTC)...
 sudo timedatectl set-timezone "Europe/Lisbon"
@@ -52,9 +41,6 @@ echo "VM local timezone: $(timedatectl | awk '/[Tt]ime\s+zone:/ {print $3}')"
 sudo systemctl -q enable avahi-daemon.service
 sudo systemctl -q start avahi-daemon.service
 echo "VM available from the host at: ${HOSTNAME}.local"
-
-# Minimize running daemons (not using remote authentication)...
-sudo dnf -q -y remove sssd-client || true
 
 # Prevent locale from being forwarded from the host, causing issues...
 if sudo grep -q '^AcceptEnv\s.*LC_' /etc/ssh/sshd_config; then
@@ -126,10 +112,6 @@ sudo dnf -q -y install \
 
 
 echo "provision.sh: Done!"
-
-if [[ "${INSTALL_SYSTEM_UPDATES:-false}" == "true" ]]; then
-    echo "*** Updates (may) have been installed. The guest VM should be restarted ASAP. ***" >&2
-fi
 
 
 # vim: set expandtab ts=4 sw=4:
