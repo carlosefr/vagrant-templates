@@ -1,10 +1,10 @@
-#!/bin/bash -e
+#!/bin/bash -eu
 #
 # Provision Ubuntu VMs (vagrant shell provisioner).
 #
 
 
-if [ "$(id -u)" != "$(id -u vagrant)" ]; then
+if [[ "$(id -u)" != "$(id -u vagrant)" ]]; then
     echo "The provisioning script must be run as the \"vagrant\" user!" >&2
     exit 1
 fi
@@ -12,14 +12,14 @@ fi
 
 echo "provision.sh: Customizing the base system..."
 
-DISTRO_CODENAME=$(lsb_release -cs)
+readonly DISTRO_CODENAME="$(lsb_release -cs)"
 
 # Ordered list of Ubuntu releases, first being the latest, for later checks...
-DISTRO_CODENAMES=($(curl -sSL http://releases.ubuntu.com/ \
-                        | perl -lne 'print lc($1) if /href=[^>]+>\s*Ubuntu\s+[0-9.]+\s+(?:LTS\s+)?\(\s*([a-z]+)\s+/i'))
+readonly DISTRO_CODENAMES=($(curl -sSL http://releases.ubuntu.com/ \
+                                 | perl -lne 'print lc($1) if /href=[^>]+>\s*Ubuntu\s+[0-9.]+\s+(?:LTS\s+)?\(\s*([a-z]+)\s+/i'))
 
 # Getting the above list by parsing some random webpage is brittle and may fail in the future...
-if [ "${#DISTRO_CODENAMES[@]}" -lt 2 ]; then
+if [[ "${#DISTRO_CODENAMES[@]}" -lt 2 ]]; then
     echo "ERROR: Couldn't fetch the list of Ubuntu releases. Provisioning might not complete successfully." >&2
 fi
 
@@ -30,7 +30,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq update
 # installed and the updates included the kernel package, this will trigger a
 # reinstallation of the VirtualBox Guest Tools for the new kernel.
 #
-if [ "$INSTALL_SYSTEM_UPDATES" == "true" ]; then
+if [[ "${INSTALL_SYSTEM_UPDATES:-false}" == "true" ]]; then
     sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y upgrade
     sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y dist-upgrade
     sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y autoremove
@@ -73,16 +73,16 @@ if sudo test -x /etc/cron.daily/mlocate; then
 fi
 
 # Remove the spurious "you have mail" message on login...
-if [ -s "/var/spool/mail/$USER" ]; then
-    > "/var/spool/mail/$USER"
+if [[ -s "/var/spool/mail/${USER}" ]]; then
+    echo -n > "/var/spool/mail/${USER}"
 fi
 
 # If another (file) provisioner made the host user's credentials available
 # to us (see the "Vagrantfile" for details), let it use "scp" and stuff...
-if [ -f /tmp/id_rsa.pub ]; then
+if [[ -f /tmp/id_rsa.pub ]]; then
     pushd "${HOME}/.ssh" >/dev/null
 
-    if [ ! -f .authorized_keys.vagrant ]; then
+    if [[ ! -f .authorized_keys.vagrant ]]; then
         cp authorized_keys .authorized_keys.vagrant
     fi
 
@@ -120,18 +120,17 @@ EOF
 # Use packages for the previous Ubuntu release if the current one isn't supported yet.
 # Docker upstream takes a while to catch up, as they don't rebuild existing packages.
 #
-DOCKER_POOL="https://download.docker.com/linux/ubuntu/dists/${DISTRO_CODENAME}/pool/stable/amd64/"
-DOCKER_DISTRO_CODENAME="$DISTRO_CODENAME"
+readonly DOCKER_POOL="https://download.docker.com/linux/ubuntu/dists/${DISTRO_CODENAME}/pool/stable/amd64/"
 
 if [ "$DISTRO_CODENAME" = "${DISTRO_CODENAMES[0]}" ] && ! curl -sSL "$DOCKER_POOL" | grep -q "\.deb"; then
-    DOCKER_DISTRO_CODENAME="${DISTRO_CODENAMES[1]}"
+    readonly DOCKER_DISTRO_CODENAME="${DISTRO_CODENAMES[1]}"
     echo "No Docker packages for '${DISTRO_CODENAME}' release, using '${DOCKER_DISTRO_CODENAME}' instead." >&2
 fi
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install bridge-utils
 curl -fsSL "https://download.docker.com/linux/ubuntu/gpg" | sudo apt-key add -
 sudo tee "/etc/apt/sources.list.d/docker-stable.list" >/dev/null <<EOF
-deb [arch=amd64] https://download.docker.com/linux/ubuntu ${DOCKER_DISTRO_CODENAME} stable
+deb [arch=amd64] https://download.docker.com/linux/ubuntu ${DOCKER_DISTRO_CODENAME:-$DISTRO_CODENAME} stable
 EOF
 
 sudo tee "/etc/apt/preferences.d/docker-pinning" >/dev/null <<EOF
@@ -158,7 +157,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
 
 echo "provision.sh: Done!"
 
-if [ "$INSTALL_SYSTEM_UPDATES" == "true" ]; then
+if [[ "${INSTALL_SYSTEM_UPDATES:-false}" == "true" ]]; then
     echo "*** Updates (may) have been installed. The guest VM should be restarted ASAP. ***" >&2
 fi
 

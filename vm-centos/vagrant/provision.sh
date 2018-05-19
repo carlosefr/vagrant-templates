@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -eu
 #
 # Provision CentOS VMs (vagrant shell provisioner).
 #
@@ -12,7 +12,7 @@ fi
 
 echo "provision.sh: Customizing the base system..."
 
-CENTOS_RELEASE=$(rpm -q --queryformat '%{VERSION}' centos-release)
+readonly CENTOS_RELEASE="$(rpm -q --queryformat '%{VERSION}' centos-release)"
 
 sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-${CENTOS_RELEASE}"
 
@@ -28,7 +28,7 @@ sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-${CENTOS_RELEASE}"
 # installed and the updates included the kernel package, this will trigger a
 # reinstallation of the VirtualBox Guest Tools for the new kernel.
 #
-if [ "$INSTALL_SYSTEM_UPDATES" == "true" ]; then
+if [[ "${INSTALL_SYSTEM_UPDATES:-false}" == "true" ]]; then
     sudo yum -q -y update
 fi
 
@@ -69,10 +69,10 @@ sudo touch /etc/selinux/targeted/contexts/files/file_contexts.local
 
 # If another (file) provisioner made the host user's credentials available
 # to us (see the "Vagrantfile" for details), let it use "scp" and stuff...
-if [ -f /tmp/id_rsa.pub ]; then
+if [[ -f /tmp/id_rsa.pub ]]; then
     pushd "${HOME}/.ssh" >/dev/null
 
-    if [ ! -f .authorized_keys.vagrant ]; then
+    if [[ ! -f .authorized_keys.vagrant ]]; then
         cp authorized_keys .authorized_keys.vagrant
     fi
 
@@ -126,7 +126,7 @@ sudo yum -q -y install \
 
 echo "provision.sh: Done!"
 
-if [ "$INSTALL_SYSTEM_UPDATES" == "true" ]; then
+if [[ "${INSTALL_SYSTEM_UPDATES:-false}" == "true" ]]; then
     echo "*** Updates (may) have been installed. The guest VM should be restarted ASAP. ***" >&2
 fi
 

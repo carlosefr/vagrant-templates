@@ -1,10 +1,10 @@
-#!/bin/bash -e
+#!/bin/bash -eu
 #
 # Provision Debian VMs (vagrant shell provisioner).
 #
 
 
-if [ "$(id -u)" != "$(id -u vagrant)" ]; then
+if [[ "$(id -u)" != "$(id -u vagrant)" ]]; then
     echo "The provisioning script must be run as the \"vagrant\" user!" >&2
     exit 1
 fi
@@ -12,7 +12,7 @@ fi
 
 echo "provision.sh: Customizing the base system..."
 
-DISTRO_CODENAME=$(lsb_release -cs)
+readonly DISTRO_CODENAME="$(lsb_release -cs)"
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq update
 
@@ -21,7 +21,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq update
 # installed and the updates included the kernel package, this will trigger a
 # reinstallation of the VirtualBox Guest Tools for the new kernel.
 #
-if [ "$INSTALL_SYSTEM_UPDATES" == "true" ]; then
+if [[ "${INSTALL_SYSTEM_UPDATES:-false}" == "true" ]]; then
     sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y upgrade
     sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y dist-upgrade
     sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y autoremove
@@ -61,16 +61,16 @@ if sudo test -x /etc/cron.daily/mlocate; then
 fi
 
 # Remove the spurious "you have mail" message on login...
-if [ -s "/var/spool/mail/$USER" ]; then
-    > "/var/spool/mail/$USER"
+if [[ -s "/var/spool/mail/${USER}" ]]; then
+    echo -n > "/var/spool/mail/${USER}"
 fi
 
 # If another (file) provisioner made the host user's credentials available
 # to us (see the "Vagrantfile" for details), let it use "scp" and stuff...
-if [ -f /tmp/id_rsa.pub ]; then
+if [[ -f /tmp/id_rsa.pub ]]; then
     pushd "${HOME}/.ssh" >/dev/null
 
-    if [ ! -f .authorized_keys.vagrant ]; then
+    if [[ ! -f .authorized_keys.vagrant ]]; then
         cp authorized_keys .authorized_keys.vagrant
     fi
 
@@ -133,7 +133,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
 
 echo "provision.sh: Done!"
 
-if [ "$INSTALL_SYSTEM_UPDATES" == "true" ]; then
+if [[ "${INSTALL_SYSTEM_UPDATES:-false}" == "true" ]]; then
     echo "*** Updates (may) have been installed. The guest VM should be restarted ASAP. ***" >&2
 fi
 

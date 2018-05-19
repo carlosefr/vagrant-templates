@@ -1,10 +1,10 @@
-#!/bin/bash -e
+#!/bin/bash -eu
 #
 # Provision Fedora VMs (vagrant shell provisioner).
 #
 
 
-if [ "$(id -u)" != "$(id -u vagrant)" ]; then
+if [[ "$(id -u)" != "$(id -u vagrant)" ]]; then
     echo "The provisioning script must be run as the \"vagrant\" user!" >&2
     exit 1
 fi
@@ -12,7 +12,7 @@ fi
 
 echo "provision.sh: Customizing the base system..."
 
-FEDORA_RELEASE=$(rpm -q --queryformat '%{VERSION}' fedora-release)
+readonly FEDORA_RELEASE="$(rpm -q --queryformat '%{VERSION}' fedora-release)"
 
 # Ensure DNF chooses a decent mirror, otherwise things may be *very* slow...
 if ! grep -q "fastestmirror=true" /etc/dnf/dnf.conf; then
@@ -28,7 +28,7 @@ sudo dnf -q makecache
 # installed and the updates included the kernel package, this will trigger a
 # reinstallation of the VirtualBox Guest Tools for the new kernel.
 #
-if [ "$INSTALL_SYSTEM_UPDATES" == "true" ]; then
+if [[ "${INSTALL_SYSTEM_UPDATES:-false}" == "true" ]]; then
     sudo dnf -q -y --setopt=deltarpm=false upgrade
 fi
 
@@ -67,10 +67,10 @@ sudo systemctl start mlocate-updatedb.service
 
 # If another (file) provisioner made the host user's credentials available
 # to us (see the "Vagrantfile" for details), let it use "scp" and stuff...
-if [ -f /tmp/id_rsa.pub ]; then
+if [[ -f /tmp/id_rsa.pub ]]; then
     pushd "${HOME}/.ssh" >/dev/null
 
-    if [ ! -f .authorized_keys.vagrant ]; then
+    if [[ ! -f .authorized_keys.vagrant ]]; then
         cp authorized_keys .authorized_keys.vagrant
     fi
 
@@ -127,7 +127,7 @@ sudo dnf -q -y install \
 
 echo "provision.sh: Done!"
 
-if [ "$INSTALL_SYSTEM_UPDATES" == "true" ]; then
+if [[ "${INSTALL_SYSTEM_UPDATES:-false}" == "true" ]]; then
     echo "*** Updates (may) have been installed. The guest VM should be restarted ASAP. ***" >&2
 fi
 
