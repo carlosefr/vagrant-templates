@@ -24,18 +24,6 @@ if [[ "${#DISTRO_CODENAMES[@]}" -lt 2 ]]; then
 fi
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq update
-
-#
-# Updating the system requires a restart. If the "vagrant-vbguest" plugin is
-# installed and the updates included the kernel package, this will trigger a
-# reinstallation of the VirtualBox Guest Tools for the new kernel.
-#
-if [[ "${INSTALL_SYSTEM_UPDATES:-false}" == "true" ]]; then
-    sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y upgrade
-    sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y dist-upgrade
-    sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y autoremove
-fi
-
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
     avahi-daemon mlocate rsync lsof iotop htop \
     ntpdate pv tree vim screen tmux ltrace strace \
@@ -156,10 +144,6 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
 
 
 echo "provision.sh: Done!"
-
-if [[ "${INSTALL_SYSTEM_UPDATES:-false}" == "true" ]]; then
-    echo "*** Updates (may) have been installed. The guest VM should be restarted ASAP. ***" >&2
-fi
 
 
 # vim: set expandtab ts=4 sw=4:

@@ -19,11 +19,6 @@ vm_hostname = "vagrant-centos-#{centos_release}x"
 vm_size = {"cpus" => 1, "memory" => 1024}
 
 
-# The box is assumed to be readily usable by default, but all available
-# system updates can be installed during provisioning, if necessary...
-install_system_updates = false
-
-
 # Required for shared folders support with VirtualBox...
 unless Vagrant.has_plugin?("vagrant-vbguest")
     raise 'vagrant-vbguest is not installed: type vagrant plugin install vagrant-vbguest'
@@ -79,7 +74,6 @@ Vagrant.configure(2) do |config|
 
     # Perform base-system customizations and install project-specific dependencies...
     config.vm.provision "shell", path: "#{vagrant_assets}/provision.sh",
-                                 env: {"INSTALL_SYSTEM_UPDATES" => install_system_updates.to_s},
                                  privileged: false  # ...run as the "vagrant" user.
 
     config.ssh.forward_agent = true

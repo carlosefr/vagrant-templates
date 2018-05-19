@@ -23,15 +23,6 @@ sudo yum -q -y makecache fast
 sudo yum -q -y --nogpgcheck install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${CENTOS_RELEASE}.noarch.rpm" || true
 sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-${CENTOS_RELEASE}"
 
-#
-# Updating the system requires a restart. If the "vagrant-vbguest" plugin is
-# installed and the updates included the kernel package, this will trigger a
-# reinstallation of the VirtualBox Guest Tools for the new kernel.
-#
-if [[ "${INSTALL_SYSTEM_UPDATES:-false}" == "true" ]]; then
-    sudo yum -q -y update
-fi
-
 sudo yum -q -y install \
     avahi chrony mlocate net-tools yum-utils lsof iotop \
     htop nmap-ncat ntpdate pv tree vim tmux ltrace strace \
@@ -125,10 +116,6 @@ sudo yum -q -y install \
 
 
 echo "provision.sh: Done!"
-
-if [[ "${INSTALL_SYSTEM_UPDATES:-false}" == "true" ]]; then
-    echo "*** Updates (may) have been installed. The guest VM should be restarted ASAP. ***" >&2
-fi
 
 
 # vim: set expandtab ts=4 sw=4:
