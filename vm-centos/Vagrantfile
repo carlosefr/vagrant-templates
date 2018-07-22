@@ -19,12 +19,6 @@ vm_hostname = "vagrant-centos-#{centos_release}x"
 vm_size = {"cpus" => 1, "memory" => 1024}
 
 
-# Required for shared folders support with VirtualBox...
-unless Vagrant.has_plugin?("vagrant-vbguest")
-    raise 'vagrant-vbguest is not installed: type vagrant plugin install vagrant-vbguest'
-end
-
-
 # Location of the external files used by this script...
 vagrant_assets = File.dirname(__FILE__) + "/vagrant"
 
@@ -39,21 +33,23 @@ end
 # This workaround is needed during the brief period when a new CentOS point
 # release becomes available but the CentOS base box hasn't been updated yet.
 # It's also required if we choose to stick with some specific point release.
-class FixGuestAdditions < VagrantVbguest::Installers::RedHat
-    def dependencies
-        packages = super
+if Vagrant.plugins_enabled? && Vagrant.has_plugin?("vagrant-vbguest")
+    class FixGuestAdditions < VagrantVbguest::Installers::RedHat
+        def dependencies
+            packages = super
 
-        # If there's no "kernel-devel" package matching the running kernel in the
-        # default repositories, then the base box we're using doesn't match the
-        # latest CentOS release anymore and we have to look for it in the archives...
-        if communicate.test('test -f /etc/centos-release && ! yum -q info kernel-devel-`uname -r` &>/dev/null')
-            env.ui.warn("[#{vm.name}] Looking for the CentOS 'kernel-devel' package in the release archives...")
-            packages.sub!('kernel-devel-`uname -r`', 'http://mirror.centos.org/centos' \
-                                                     '/`grep -Po \'\b\d+\.[\d.]+\b\' /etc/centos-release`' \
-                                                     '/{os,updates}/`arch`/Packages/kernel-devel-`uname -r`.rpm')
+            # If there's no "kernel-devel" package matching the running kernel in the
+            # default repositories, then the base box we're using doesn't match the
+            # latest CentOS release anymore and we have to look for it in the archives...
+            if communicate.test('test -f /etc/centos-release && ! yum -q info kernel-devel-`uname -r` &>/dev/null')
+                env.ui.warn("[#{vm.name}] Looking for the CentOS 'kernel-devel' package in the release archives...")
+                packages.sub!('kernel-devel-`uname -r`', 'http://mirror.centos.org/centos' \
+                                                         '/`grep -Po \'\b\d+\.[\d.]+\b\' /etc/centos-release`' \
+                                                         '/{os,updates}/`arch`/Packages/kernel-devel-`uname -r`.rpm')
+            end
+
+            packages
         end
-
-        packages
     end
 end
 
@@ -90,9 +86,15 @@ Vagrant.configure(2) do |config|
         # Resolve names using the host's stub resolver (useful for VPNs)...
         vm.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
 
-        # Install guest additions automatically...
-        override.vbguest.auto_update = true
-        override.vbguest.installer = FixGuestAdditions  # ...see fix above.
+        if Vagrant.plugins_enabled?
+            if !Vagrant.has_plugin?("vagrant-vbguest")  # ...shared folder support.
+                raise "the 'vagrant-vbguest' plugin must be installed"
+            end
+
+            # Install guest additions automatically...
+            override.vbguest.auto_update = true
+            override.vbguest.installer = FixGuestAdditions  # ...see fix above.
+        end
 
         # Expose the VM to the host instead of forwarding many ports individually
         # for complex projects. The provisioning script will setup Avahi/mDNS to
