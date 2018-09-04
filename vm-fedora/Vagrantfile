@@ -37,7 +37,7 @@ end
 # There is a very high probability that DNF's choice of mirror turns out to
 # be a dud. Ensure "fastestmirror" is enabled as early as possible, otherwise
 # installing dependencies for the guest additions may take a *very* long time...
-if Vagrant.plugins_enabled? && Vagrant.has_plugin?("vagrant-vbguest")
+begin
     class TweakGuestAdditions < VagrantVbguest::Installers::Fedora
         def install_dependencies_cmd
             'grep -q fastestmirror=true /etc/dnf/dnf.conf || echo fastestmirror=true >>/etc/dnf/dnf.conf; ' \
@@ -47,10 +47,18 @@ if Vagrant.plugins_enabled? && Vagrant.has_plugin?("vagrant-vbguest")
             'dnf -q -y install ' + dependencies
         end
     end
+
+    # Anything with priority over 5 overrides the default installer...
+    VagrantVbguest::Installer.register(TweakGuestAdditions, 100)
+rescue NameError
+    # The "VagrantVbguest" class won't be available during the first pass,
+    # when vagrant is checking for required plugins and stuff like that...
 end
 
 
 Vagrant.configure(2) do |config|
+    config.vagrant.plugins = ["vagrant-vbguest", "vagrant-reload"]
+
     config.vm.box = "fedora/#{fedora_release}-cloud-base"
     config.vm.hostname = vm_hostname
 
@@ -58,10 +66,6 @@ Vagrant.configure(2) do |config|
     config.vm.synced_folder ".", "/vagrant", disabled: true
 
     if install_system_updates
-        if Vagrant.plugins_enabled? && !Vagrant.has_plugin?("vagrant-reload")
-            raise "the 'vagrant-reload' plugin must be installed"
-        end
-
         config.vm.provision "shell", path: "#{vagrant_assets}/updates.sh",
                                      privileged: false  # ...run as the "vagrant" user.
         config.vm.provision :reload
@@ -92,15 +96,8 @@ Vagrant.configure(2) do |config|
         # Resolve names using the host's stub resolver (useful for VPNs)...
         vm.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
 
-        if Vagrant.plugins_enabled?
-            if !Vagrant.has_plugin?("vagrant-vbguest")  # ...shared folder support.
-                raise "the 'vagrant-vbguest' plugin must be installed"
-            end
-
-            # Install guest additions automatically...
-            override.vbguest.auto_update = true
-            override.vbguest.installer = TweakGuestAdditions  # ...see above.
-        end
+        # Install guest additions automatically...
+        override.vbguest.auto_update = true
 
         # Expose the VM to the host instead of forwarding many ports individually
         # for complex projects. The provisioning script will setup Avahi/mDNS to

@@ -32,6 +32,8 @@ end
 
 
 Vagrant.configure(2) do |config|
+    config.vagrant.plugins = ["vagrant-vbguest"]
+
     config.vm.box = "debian/#{debian_codenames[debian_release]}64"
     config.vm.hostname = vm_hostname
 
@@ -62,10 +64,6 @@ Vagrant.configure(2) do |config|
 
         # Install guest additions automatically (if not already builtin)...
         if !config.vm.box.match(/^[^\/]+\/contrib-/)
-            if Vagrant.plugins_enabled? && !Vagrant.has_plugin?("vagrant-vbguest")
-                raise "the 'vagrant-vbguest' plugin must be installed"
-            end
-
             override.vbguest.auto_update = true
         end
 
