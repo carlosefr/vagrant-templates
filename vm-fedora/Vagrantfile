@@ -20,7 +20,7 @@ vm_size = {"cpus" => 1, "memory" => 1024}
 
 # The box is assumed to be readily usable by default, but all available
 # system updates can be installed during provisioning, if necessary...
-install_system_updates = true
+install_system_updates = false
 
 
 # Location of the external files used by this script...
