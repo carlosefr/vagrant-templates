@@ -9,7 +9,7 @@ require 'json'
 
 # Provisioning might need updating for different FreeBSD
 # releases, see the "provision.sh" script for details...
-freebsd_release = "11.1-RELEASE"
+freebsd_release = "11.2-RELEASE"
 
 # This is the minimum customization necessary but, to tailor this configuration
 # to a specific project, you should also edit the "vagrant/provision.sh" script...
