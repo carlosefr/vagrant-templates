@@ -10,7 +10,7 @@ These are not minimal templates. They include configuration tweaks, **workaround
 
 ## Dependencies
 
-You'll need [VirtualBox](https://www.virtualbox.org/) and [Vagrant](https://www.vagrantup.com/) (obviously) with the `vagrant-vbguest` plugin installed. You can also install the `vagrant-reload` plugin, but it is **optional** (if you enable automatic installation of system updates, it allows the VM to be immediately rebooted after provisioning).
+You'll need [VirtualBox](https://www.virtualbox.org/) and [Vagrant](https://www.vagrantup.com/). Most templates require the `vagrant-vbguest` plugin installed (to share folders with the host) and som also require the `vagrant-reload` plugin (to allow the VM to be immediately rebooted after provisioning).
 
 ## Notes
 
