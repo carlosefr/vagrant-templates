@@ -15,7 +15,11 @@ echo "provision.sh: Customizing the base system..."
 readonly FEDORA_RELEASE="$(rpm -q --queryformat '%{VERSION}' fedora-release)"
 
 # Fix DNS breakage on reprovisioning (sometimes)...
-sudo systemctl restart network
+if [ -f /etc/init.d/network ]; then
+    sudo systemctl restart network  # ...Fedora <= 28
+else
+    sudo systemctl restart NetworkManager
+fi
 
 # Ensure DNF chooses a decent mirror, otherwise things may be *very* slow...
 if ! grep -q "fastestmirror=true" /etc/dnf/dnf.conf; then
