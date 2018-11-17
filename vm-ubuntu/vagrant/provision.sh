@@ -27,7 +27,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq update
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
     avahi-daemon mlocate rsync lsof iotop htop \
     ntpdate pv tree vim screen tmux ltrace strace \
-    curl apt-transport-https dnsutils
+    curl apt-transport-https dnsutils zip unzip
 
 # This is just a matter of preference...
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install netcat-openbsd
@@ -36,6 +36,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge netcat-traditional
 # Minimize the number of running daemons...
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge \
     lxcfs snapd open-iscsi mdadm accountsservice acpid
+sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y autoremove
 
 # Set a local timezone (the default for Ubuntu boxes is GMT)...
 sudo timedatectl set-timezone "Europe/Lisbon"
