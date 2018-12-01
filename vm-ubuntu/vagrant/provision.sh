@@ -38,6 +38,9 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge \
     lxcfs snapd open-iscsi mdadm accountsservice acpid
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y autoremove
 
+# This delays boot by *a lot* for no apparent reason...
+sudo systemctl -q mask systemd-networkd-wait-online
+
 # Set a local timezone (the default for Ubuntu boxes is GMT)...
 sudo timedatectl set-timezone "Europe/Lisbon"
 echo "VM local timezone: $(timedatectl | awk '/[Tt]ime\s+zone:/ {print $3}')"
