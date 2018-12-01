@@ -64,6 +64,9 @@ Vagrant.configure(2) do |config|
         # Resolve names using the host's stub resolver (useful for VPNs)...
         vm.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
 
+        # No need for audio in a server-type VM...
+        vm.customize ["modifyvm", :id, "--audio", "none"]
+
         # Override the console log location set by the base box...
         vm.customize ["modifyvm", :id, "--uart1", "0x3F8", "4" ]
         vm.customize ["modifyvm", :id, "--uartmode1", "file", File.join(vagrant_assets, "console.log")]

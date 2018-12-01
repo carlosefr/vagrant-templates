@@ -97,6 +97,9 @@ Vagrant.configure(2) do |config|
         # Resolve names using the host's stub resolver (useful for VPNs)...
         vm.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
 
+        # No need for audio in a server-type VM...
+        vm.customize ["modifyvm", :id, "--audio", "none"]
+
         # Install guest additions automatically...
         override.vbguest.auto_update = true
 
