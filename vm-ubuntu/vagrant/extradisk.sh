@@ -23,7 +23,7 @@ fi
 echo "extradisk.sh: Setting up an extra data disk: ${FS_MOUNT_POINT}"
 
 # The data disk is on the highest port of the controller, so it should appear as the last disk...
-readonly DISK_DEVICE=$(sudo parted /dev/sda print devices | egrep '/dev/sd[a-z]\s' | cut -f1 -d' ' | sort | tail -1)
+readonly DISK_DEVICE=$(sudo parted /dev/sda print devices | egrep '^/dev/sd[b-z]\s' | cut -f1 -d' ' | sort | tail -1)
 
 if ls "${DISK_DEVICE}"? >/dev/null 2>&1; then
     echo "The data disk device '${DISK_DEVICE}' is already partitioned!" >&2
