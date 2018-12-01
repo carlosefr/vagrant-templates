@@ -59,6 +59,7 @@ Vagrant.configure(2) do |config|
 
         vm.memory = vm_size["memory"]
         vm.cpus = vm_size["cpus"]
+        vm.default_nic_type = "virtio"
 
         # Resolve names using the host's stub resolver (useful for VPNs)...
         vm.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]

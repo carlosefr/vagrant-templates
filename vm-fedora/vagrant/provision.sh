@@ -35,7 +35,7 @@ sudo dnf -q -y upgrade vim-minimal
 sudo dnf -q -y install \
     avahi mlocate lsof iotop htop nmap-ncat \
     ntpdate pv tree vim tmux ltrace strace \
-    sysstat perf zip unzip bind-utils
+    sysstat perf zip unzip bind-utils pciutils
 
 # Set a local timezone (default is UTC)...
 sudo timedatectl set-timezone "Europe/Lisbon"
