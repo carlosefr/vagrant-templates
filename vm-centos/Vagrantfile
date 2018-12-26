@@ -34,7 +34,7 @@ end
 # release becomes available but the CentOS base box hasn't been updated yet.
 # It's also required if we choose to stick with some specific point release.
 begin
-    class FixGuestAdditions < VagrantVbguest::Installers::RedHat
+    class FixGuestAdditions < VagrantVbguest::Installers::CentOS
         def dependencies
             packages = super
 
