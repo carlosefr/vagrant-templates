@@ -71,7 +71,7 @@ fi
 
 # Make "vagrant ssh" sessions more comfortable by tweaking the
 # configuration of some system utilities (eg. bash, vim, tmux)...
-rsync -a --exclude=.DS_Store "${HOME}/shared/vagrant/skel/" "${HOME}/"
+rsync -r --exclude=.DS_Store "${HOME}/shared/vagrant/skel/" "${HOME}/"
 
 
 echo "provision.sh: Configuring custom repositories..."
