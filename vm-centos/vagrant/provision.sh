@@ -83,7 +83,7 @@ echo "provision.sh: Configuring custom repositories..."
 
 # IUS gives us recent (but stable) packages...
 sudo yum -q -y --nogpgcheck install "https://centos${CENTOS_RELEASE}.iuscommunity.org/ius-release.rpm" || true
-sudo rpm --import "/etc/pki/rpm-gpg/IUS-COMMUNITY-GPG-KEY"
+sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-IUS-${CENTOS_RELEASE}"
 
 # NGINX mainline gives us an updated (but production-ready) version...
 sudo rpm --import "https://nginx.org/keys/nginx_signing.key"
