@@ -9,7 +9,7 @@ require 'json'
 
 # Provisioning might need updating for different Fedora
 # releases, see the "provision.sh" script for details...
-fedora_release = 29
+fedora_release = 30
 
 # This is the minimum customization necessary but, to tailor this configuration
 # to a specific project, you should also edit the "vagrant/provision.sh" script...
@@ -39,6 +39,10 @@ end
 # installing dependencies for the guest additions may take a *very* long time...
 begin
     class TweakGuestAdditions < VagrantVbguest::Installers::Fedora
+        def dependencies
+            super + " '*/lib64/libcrypt.so.1'"
+        end
+
         def install_dependencies_cmd
             'grep -q fastestmirror=true /etc/dnf/dnf.conf || echo fastestmirror=true >>/etc/dnf/dnf.conf; ' \
             'rm -f /var/cache/dnf/fastestmirror.cache; ' \

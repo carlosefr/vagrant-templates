@@ -12,7 +12,11 @@ fi
 
 echo "provision.sh: Customizing the base system..."
 
-readonly FEDORA_RELEASE="$(rpm -q --queryformat '%{VERSION}' fedora-release)"
+if rpm -q --quiet fedora-release-cloud; then  # ...the package has been split since Fedora 30.
+    readonly FEDORA_RELEASE="$(rpm -q --queryformat '%{VERSION}' fedora-release-cloud)"
+else
+    readonly FEDORA_RELEASE="$(rpm -q --queryformat '%{VERSION}' fedora-release)"
+fi
 
 # Fix DNS breakage on reprovisioning (sometimes)...
 if [ -f /etc/init.d/network ]; then
