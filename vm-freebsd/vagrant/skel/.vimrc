@@ -2,5 +2,5 @@
 source $VIMRUNTIME/vimrc_example.vim
 
 set nobackup
-set modeline
+set nomodeline
 set noundofile
