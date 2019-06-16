@@ -1,6 +1,10 @@
-" Load some better defaults...
-source $VIMRUNTIME/vimrc_example.vim
+" Keep the RedHat-shipped defaults...
+source /etc/vimrc
 
 set nobackup
-set nomodeline
 set noundofile
+set nomodeline
+
+set mouse=
+
+" autocmd BufWritePre * :%s/\s\+$//e
