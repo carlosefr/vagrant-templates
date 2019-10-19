@@ -114,7 +114,7 @@ EOF
 #
 readonly DOCKER_POOL="https://download.docker.com/linux/ubuntu/dists/${DISTRO_CODENAME}/pool/stable/amd64/"
 
-if [ "$DISTRO_CODENAME" = "${DISTRO_CODENAMES[0]}" ] && ! curl -sSL "$DOCKER_POOL" | grep -q "\.deb"; then
+if [ "$DISTRO_CODENAME" = "${DISTRO_CODENAMES[0]}" ] && ! curl -sSL "$DOCKER_POOL" | cat | grep -q "\.deb"; then
     readonly DOCKER_DISTRO_CODENAME="${DISTRO_CODENAMES[1]}"
     echo "No Docker packages for '${DISTRO_CODENAME}' release, using '${DOCKER_DISTRO_CODENAME}' instead." >&2
 fi
