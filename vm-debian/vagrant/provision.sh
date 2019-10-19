@@ -72,6 +72,7 @@ fi
 # Make "vagrant ssh" sessions more comfortable by tweaking the
 # configuration of some system utilities (eg. bash, vim, tmux)...
 rsync -r --exclude=.DS_Store "${HOME}/shared/vagrant/skel/" "${HOME}/"
+sudo rm -f /etc/update-motd.d/99-bento && echo -n | sudo tee /etc/motd >/dev/null
 
 
 echo "provision.sh: Configuring custom repositories..."
