@@ -36,6 +36,8 @@ end
 
 
 Vagrant.configure(2) do |config|
+    config.vagrant.plugins = ["vagrant-vbguest"]
+
     config.vm.box = "ubuntu/#{ubuntu_codenames[ubuntu_release]}64"
     config.vm.hostname = vm_hostname
 
@@ -70,6 +72,11 @@ Vagrant.configure(2) do |config|
         vm.memory = vm_size["memory"]
         vm.cpus = vm_size["cpus"]
         vm.default_nic_type = "virtio"
+
+        # Guest additions are builtin to official Ubuntu boxes, but we need to ensure that
+        # the vbguest plugin (required by other boxes) doesn't touch them in any way...
+        override.vbguest.auto_update = false
+        config.vbguest.allow_downgrade = false
 
         # Resolve names using the host's stub resolver (useful for VPNs)...
         vm.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
