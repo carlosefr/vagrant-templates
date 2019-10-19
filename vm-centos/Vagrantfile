@@ -18,6 +18,11 @@ vm_name = "Generic CentOS #{centos_release}.x"
 vm_hostname = "vagrant-centos-#{centos_release}x"
 vm_size = {"cpus" => 1, "memory" => 1024}
 
+# Use the official box from the CentOS project by default. Those don't have the guest
+# additions pre-installed which causes issues from time to time. Possible alternatives
+# are the "bento/centos-#{centos_release}" or "carlosefr/centos-#{centos_release}" boxes...
+vm_box = "centos/#{centos_release}"
+vm_box_version = nil
 
 # Location of the external files used by this script...
 vagrant_assets = File.dirname(__FILE__) + "/vagrant"
@@ -63,7 +68,8 @@ end
 Vagrant.configure(2) do |config|
     config.vagrant.plugins = ["vagrant-vbguest"]
 
-    config.vm.box = "centos/#{centos_release}"
+    config.vm.box = vm_box
+    config.vm.box_version = vm_box_version.nil? ? vm_box_version : ">= 0"
     config.vm.hostname = vm_hostname
 
     # The CentOS box defaults to using rsynced folders...
@@ -97,8 +103,9 @@ Vagrant.configure(2) do |config|
         # No need for audio in a server-type VM...
         vm.customize ["modifyvm", :id, "--audio", "none"]
 
-        # Install guest additions automatically...
-        override.vbguest.auto_update = true
+        # Install guest additions automatically (if not already builtin)...
+        override.vbguest.auto_update = !config.vm.box.match(/^(?:carlosefr|bento)/)
+        config.vbguest.allow_downgrade = false
 
         # Expose the VM to the host instead of forwarding many ports individually
         # for complex projects. The provisioning script will setup Avahi/mDNS to

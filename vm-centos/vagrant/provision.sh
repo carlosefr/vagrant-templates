@@ -26,7 +26,7 @@ sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-${CENTOS_RELEASE}"
 sudo yum -q -y install \
     avahi chrony mlocate net-tools yum-utils lsof iotop \
     htop nmap-ncat ntpdate pv tree vim tmux ltrace strace \
-    sysstat perf zip unzip bind-utils
+    sysstat perf zip unzip bind-utils man-pages
 
 # Minor cleanup...
 sudo systemctl stop tuned.service firewalld.service
@@ -77,6 +77,7 @@ fi
 # Make "vagrant ssh" sessions more comfortable by tweaking the
 # configuration of some system utilities (eg. bash, vim, tmux)...
 rsync -r --exclude=.DS_Store "${HOME}/shared/vagrant/skel/" "${HOME}/"
+echo -n | sudo tee /etc/motd >/dev/null
 
 
 echo "provision.sh: Configuring custom repositories..."
