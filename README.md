@@ -8,9 +8,11 @@ These are not minimal templates. They include configuration tweaks, **workaround
   * Add the necessary steps to provision your application inside the VM, maybe removing some redundant things.
   * Just use them as a reference to write your own minimal environments with tweaked settings.
 
+These templates usually support "official" vagrant boxes, but some default to my own (mostly [bento](http://chef.github.io/bento/)-based) boxes at [app.vagrantup.com/carlosefr](https://app.vagrantup.com/carlosefr) for convenience (i.e. pre-installed guest additions).
+
 ## Dependencies
 
-You'll need [VirtualBox](https://www.virtualbox.org/) and [Vagrant](https://www.vagrantup.com/). Most templates require the `vagrant-vbguest` plugin installed (to share folders with the host) and som also require the `vagrant-reload` plugin (to allow the VM to be immediately rebooted after provisioning).
+You'll need [VirtualBox](https://www.virtualbox.org/) and [Vagrant](https://www.vagrantup.com/). Some templates require the `vagrant-vbguest` plugin installed (to share folders with the host) and may also require the `vagrant-reload` plugin (to allow the VM to be immediately rebooted after provisioning).
 
 ## Notes
 
@@ -33,6 +35,7 @@ Vagrant.configure(2) do |config|
 
     if Vagrant.has_plugin?("vagrant-vbguest")
         config.vbguest.auto_update = false
+        config.vbguest.allow_downgrade = false
     end
 
     ...
@@ -42,7 +45,7 @@ The templates that need to install/update the VirtualBox Guest Additions already
 
 ### Clock Drift
 
-On my older Macbook Pro the (VM) clocks drift quite significantly with paravirtualization enabled, and I never quite figured out how to fix it. If you notice this happening, just add the following to your `~/.vagrant.d/Vagrantfile`:
+On older hosts the (VM) clocks may drift quite significantly with paravirtualization enabled, and I never quite figured out how to fix it. If you notice this happening, just add the following to your `~/.vagrant.d/Vagrantfile`:
 ```ruby
 Vagrant.configure(2) do |config|
     ...
