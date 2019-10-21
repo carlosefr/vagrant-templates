@@ -18,10 +18,10 @@ vm_name = "Generic CentOS #{centos_release}.x"
 vm_hostname = "vagrant-centos-#{centos_release}x"
 vm_size = {"cpus" => 1, "memory" => 1024}
 
-# Use the official box from the CentOS project by default. Those don't have the guest
-# additions pre-installed which causes issues from time to time. Possible alternatives
-# are the "bento/centos-#{centos_release}" or "carlosefr/centos-#{centos_release}" boxes...
-vm_box = "centos/#{centos_release}"
+# Use a box with included guest additions, to avoid occasional provisioning problems.
+# Possible alternatives are the "bento/centos-#{centos_release}" box, on which this
+# default box is based, or the CentOS project's "centos/#{centos_release}" box...
+vm_box = "carlosefr/centos-#{centos_release}"
 vm_box_version = nil
 
 # Location of the external files used by this script...

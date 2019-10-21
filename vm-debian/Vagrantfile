@@ -19,9 +19,10 @@ vm_name = "Generic Debian #{debian_release}.x (#{debian_codenames[debian_release
 vm_hostname = "vagrant-debian-#{debian_codenames[debian_release]}"
 vm_size = {"cpus" => 1, "memory" => 1024}
 
-# Use the "official" box with included guest additions by default, to avoid occasional provisioning problems.
-# Possible alternatives are the "bento/debian-#{debian_release}" or "carlosefr/debian-#{debian_release}" boxes...
-vm_box = "debian/contrib-#{debian_codenames[debian_release]}64"
+# Use a box with included guest additions by default, to avoid occasional provisioning problems.
+# Possible alternatives are the "bento/debian-#{debian_release}" box, on which this default box
+# is based, or the Debian project's "debian/contrib-#{debian_codenames[debian_release]}64" box...
+vm_box = "carlosefr/debian-#{debian_release}"
 vm_box_version = nil
 
 # Location of the external files used by this script...
