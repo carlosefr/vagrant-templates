@@ -76,7 +76,7 @@ Vagrant.configure(2) do |config|
         # Guest additions are builtin to official Ubuntu boxes, but we need to ensure that
         # the vbguest plugin (required by other boxes) doesn't touch them in any way...
         override.vbguest.auto_update = false
-        config.vbguest.allow_downgrade = false
+        override.vbguest.allow_downgrade = false
 
         # Resolve names using the host's stub resolver (useful for VPNs)...
         vm.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
