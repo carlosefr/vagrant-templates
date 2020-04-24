@@ -9,8 +9,8 @@ require 'json'
 
 # Provisioning might need updating for different Ubuntu
 # releases, see the "provision.sh" script for details...
-ubuntu_release = "18.04"
-ubuntu_codenames = {"16.04" => "xenial", "18.04" => "bionic"}  # ...currently supported.
+ubuntu_release = "20.04"
+ubuntu_codenames = {"16.04" => "xenial", "18.04" => "bionic", "20.04" => "focal"}  # ...currently supported.
 
 
 # This is the minimum customization necessary but, to tailor this configuration
@@ -73,9 +73,9 @@ Vagrant.configure(2) do |config|
         vm.cpus = vm_size["cpus"]
         vm.default_nic_type = "virtio"
 
-        # Guest additions are builtin to official Ubuntu boxes, but we need to ensure that
+        # On Ubuntu boxes where guest additions are built in, we need to ensure that
         # the vbguest plugin (required by other boxes) doesn't touch them in any way...
-        override.vbguest.auto_update = false
+        override.vbguest.auto_update = (ubuntu_release.to_f > 18.04)
         override.vbguest.allow_downgrade = false
 
         # Resolve names using the host's stub resolver (useful for VPNs)...

@@ -15,8 +15,10 @@ echo "provision.sh: Customizing the base system..."
 readonly DISTRO_CODENAME="$(lsb_release -cs)"
 
 # Ordered list of Ubuntu releases, first being the latest, for later checks...
-readonly DISTRO_CODENAMES=($(curl -sSL http://releases.ubuntu.com/ \
-                                 | perl -lne 'print lc($1) if /href=[^>]+>\s*Ubuntu\s+[0-9.]+\s+(?:LTS\s+)?\(\s*([a-z]+)\s+/i'))
+readonly DISTRO_CODENAMES=($(curl -sSL https://releases.ubuntu.com/ \
+                                 | perl -lne 'print lc("$1 $2") if /href=[^>]+>\s*Ubuntu\s+([0-9.]+)\s+(?:LTS\s+)?\(\s*([a-z]+)\s+/i' \
+                                 | sort -rn \
+                                 | awk '{print $2}'))
 
 # Getting the above list by parsing some random webpage is brittle and may fail in the future...
 if [[ "${#DISTRO_CODENAMES[@]}" -lt 2 ]]; then
@@ -89,14 +91,29 @@ fi
 # configuration of some system utilities (eg. bash, vim, tmux)...
 rsync -r --exclude=.DS_Store "${HOME}/shared/vagrant/skel/" "${HOME}/"
 
+# Disable verbose messages on login...
+echo -n > "${HOME}/.hushlogin"
+
 
 echo "provision.sh: Configuring custom repositories..."
 
+#
 # NGINX mainline gives us an updated (but production-ready) version...
+#
+# Use packages for the previous Ubuntu release if the current one isn't supported yet.
+# NGINX upstream takes a while to catch up, as they don't rebuild existing packages.
+#
+readonly NGINX_POOL="https://nginx.org/packages/mainline/ubuntu/dists/${DISTRO_CODENAME}/nginx/binary-amd64"
+
+if [ "$DISTRO_CODENAME" = "${DISTRO_CODENAMES[0]}" ] && ! curl -sSL "$NGINX_POOL" | cat | grep -q "\.deb"; then
+    readonly NGINX_DISTRO_CODENAME="${DISTRO_CODENAMES[1]}"
+    echo "No NGINX packages for '${DISTRO_CODENAME}' release, using '${NGINX_DISTRO_CODENAME}' instead." >&2
+fi
+
 curl -fsSL "https://nginx.org/keys/nginx_signing.key" | sudo apt-key add -
 sudo tee "/etc/apt/sources.list.d/nginx-mainline.list" >/dev/null <<EOF
-deb https://nginx.org/packages/mainline/ubuntu/ ${DISTRO_CODENAME} nginx
-deb-src https://nginx.org/packages/mainline/ubuntu/ ${DISTRO_CODENAME} nginx
+deb https://nginx.org/packages/mainline/ubuntu/ ${NGINX_DISTRO_CODENAME:-$DISTRO_CODENAME} nginx
+deb-src https://nginx.org/packages/mainline/ubuntu/ ${NGINX_DISTRO_CODENAME:-$DISTRO_CODENAME} nginx
 EOF
 
 sudo tee "/etc/apt/preferences.d/nginx-pinning" >/dev/null <<EOF
