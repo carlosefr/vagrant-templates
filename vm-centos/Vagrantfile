@@ -9,7 +9,7 @@ require 'json'
 
 # Provisioning might need updating for different CentOS
 # releases, see the "provision.sh" script for details...
-centos_release = 7
+centos_release = 8
 
 
 # This is the minimum customization necessary but, to tailor this configuration

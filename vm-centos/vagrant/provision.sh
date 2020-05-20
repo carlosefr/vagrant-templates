@@ -4,7 +4,7 @@
 #
 
 
-if [ "$(id -u)" != "$(id -u vagrant)" ]; then
+if [[ "$(id -u)" != "$(id -u vagrant)" ]]; then
     echo "The provisioning script must be run as the \"vagrant\" user!" >&2
     exit 1
 fi
@@ -12,20 +12,20 @@ fi
 
 echo "provision.sh: Customizing the base system..."
 
-readonly CENTOS_RELEASE="$(rpm -q --queryformat '%{VERSION}' centos-release)"
+readonly CENTOS_RELEASE="$(rpm -q --queryformat '%{VERSION}' centos-release | cut -d. -f1)"
 
-sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-${CENTOS_RELEASE}"
+sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-$([[ "${CENTOS_RELEASE}" -lt 8 ]] && echo "CentOS-${CENTOS_RELEASE}" || echo "centosofficial")"
 
 sudo yum -q -y clean all
-sudo yum -q -y makecache fast
+sudo yum -q -y makecache $([[ "${CENTOS_RELEASE}" -ge 8 ]] && echo "--timer" || echo "fast")
 
 # EPEL gives us some essential base-system extras...
 sudo yum -q -y --nogpgcheck install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${CENTOS_RELEASE}.noarch.rpm" || true
 sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-${CENTOS_RELEASE}"
 
 sudo yum -q -y install \
-    avahi chrony mlocate net-tools yum-utils lsof iotop \
-    htop nmap-ncat ntpdate pv tree vim tmux ltrace strace \
+    avahi mlocate lsof iotop \
+    htop nmap-ncat pv tree vim tmux ltrace strace \
     sysstat perf zip unzip bind-utils man-pages
 
 # Minor cleanup...
@@ -36,6 +36,7 @@ sudo systemctl -q disable tuned.service firewalld.service
 sudo timedatectl set-timezone "Europe/Lisbon"
 echo "VM local timezone: $(timedatectl | awk '/[Tt]ime\s+zone:/ {print $3}')"
 
+[[ "${CENTOS_RELEASE}" -lt 8 ]] && sudo yum -q -y install ntpdate
 sudo systemctl -q enable chronyd.service
 sudo systemctl start chronyd.service
 
@@ -51,8 +52,10 @@ if sudo grep -q '^AcceptEnv\s.*LC_' /etc/ssh/sshd_config; then
 fi
 
 # Generate the initial "locate" DB...
-if sudo test -x /etc/cron.daily/mlocate; then
-    sudo /etc/cron.daily/mlocate
+if [[ "${CENTOS_RELEASE}" -lt 8 ]]; then
+    sudo test -x /etc/cron.daily/mlocate && sudo /etc/cron.daily/mlocate
+else
+    sudo systemctl start mlocate-updatedb.service
 fi
 
 # Some SELinux tools may complain if this file is missing...
@@ -82,10 +85,6 @@ echo -n | sudo tee /etc/motd >/dev/null
 
 echo "provision.sh: Configuring custom repositories..."
 
-# IUS gives us recent (but stable) packages...
-sudo yum -q -y --nogpgcheck install "https://centos${CENTOS_RELEASE}.iuscommunity.org/ius-release.rpm" || true
-sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-IUS-${CENTOS_RELEASE}"
-
 # NGINX mainline gives us an updated (but production-ready) version...
 sudo rpm --import "https://nginx.org/keys/nginx_signing.key"
 sudo tee "/etc/yum.repos.d/nginx-mainline.repo" >/dev/null <<EOF
@@ -96,14 +95,21 @@ gpgcheck=1
 enabled=1
 EOF
 
-# For container-based projects, we'll want to use the official Docker packages...
-sudo yum -q -y install bridge-utils
-sudo rpm --import "https://download.docker.com/linux/centos/gpg"
-sudo yum-config-manager --add-repo "https://download.docker.com/linux/centos/docker-ce.repo"
+if [[ "${CENTOS_RELEASE}" -lt 8 ]]; then
+    # IUS gives us recent (but stable) packages on previous CentOS releases...
+    sudo yum -q -y --nogpgcheck install "https://repo.ius.io/ius-release-el${CENTOS_RELEASE}.rpm" || true
+    sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-IUS-${CENTOS_RELEASE}"
+
+    # Starting with RHEL/CentOS 8, Red Hat recommends podman/buildah for container-based
+    # projects and the official (upstream) Docker packages no longer install cleanly. :/
+    sudo yum -q -y install bridge-utils
+    sudo rpm --import "https://download.docker.com/linux/centos/gpg"
+    sudo yum-config-manager --add-repo "https://download.docker.com/linux/centos/docker-ce.repo" >/dev/null
+fi
 
 # No packages from the above repositories have been installed,
 # but prepare things for that to (maybe) happen further below...
-sudo yum -q -y makecache fast
+sudo yum -q -y makecache $([[ "${CENTOS_RELEASE}" -ge 8 ]] && echo "--timer" || echo "fast")
 
 
 echo "provision.sh: Running project-specific actions..."
