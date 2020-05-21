@@ -1,6 +1,6 @@
 #!/bin/bash -eu
 #
-# Provision CentOS VMs (vagrant shell provisioner).
+# Provision CentOS VMs (vagrant shell provisioner, CentOS <= 7).
 #
 
 
@@ -10,21 +10,21 @@ if [[ "$(id -u)" != "$(id -u vagrant)" ]]; then
 fi
 
 
-echo "provision.sh: Customizing the base system..."
+echo "provision-v7.sh: Customizing the base system..."
 
 readonly CENTOS_RELEASE="$(rpm -q --queryformat '%{VERSION}' centos-release | cut -d. -f1)"
 
-sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-$([[ "${CENTOS_RELEASE}" -lt 8 ]] && echo "CentOS-${CENTOS_RELEASE}" || echo "centosofficial")"
+sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-${CENTOS_RELEASE}"
 
 sudo yum -q -y clean all
-sudo yum -q -y makecache $([[ "${CENTOS_RELEASE}" -ge 8 ]] && echo "--timer" || echo "fast")
+sudo yum -q -y makecache fast
 
 # EPEL gives us some essential base-system extras...
 sudo yum -q -y --nogpgcheck install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${CENTOS_RELEASE}.noarch.rpm" || true
 sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-${CENTOS_RELEASE}"
 
 sudo yum -q -y install \
-    avahi mlocate lsof iotop \
+    avahi mlocate ntpdate lsof iotop \
     htop nmap-ncat pv tree vim tmux ltrace strace \
     sysstat perf zip unzip bind-utils man-pages
 
@@ -36,7 +36,6 @@ sudo systemctl -q disable tuned.service firewalld.service
 sudo timedatectl set-timezone "Europe/Lisbon"
 echo "VM local timezone: $(timedatectl | awk '/[Tt]ime\s+zone:/ {print $3}')"
 
-[[ "${CENTOS_RELEASE}" -lt 8 ]] && sudo yum -q -y install ntpdate
 sudo systemctl -q enable chronyd.service
 sudo systemctl start chronyd.service
 
@@ -52,10 +51,8 @@ if sudo grep -q '^AcceptEnv\s.*LC_' /etc/ssh/sshd_config; then
 fi
 
 # Generate the initial "locate" DB...
-if [[ "${CENTOS_RELEASE}" -lt 8 ]]; then
-    sudo test -x /etc/cron.daily/mlocate && sudo /etc/cron.daily/mlocate
-else
-    sudo systemctl start mlocate-updatedb.service
+if sudo test -x /etc/cron.daily/mlocate; then
+    sudo /etc/cron.daily/mlocate
 fi
 
 # Some SELinux tools may complain if this file is missing...
@@ -83,7 +80,7 @@ rsync -r --exclude=.DS_Store "${HOME}/shared/vagrant/skel/" "${HOME}/"
 echo -n | sudo tee /etc/motd >/dev/null
 
 
-echo "provision.sh: Configuring custom repositories..."
+echo "provision-v7.sh: Configuring custom repositories..."
 
 # NGINX mainline gives us an updated (but production-ready) version...
 sudo rpm --import "https://nginx.org/keys/nginx_signing.key"
@@ -95,24 +92,21 @@ gpgcheck=1
 enabled=1
 EOF
 
-if [[ "${CENTOS_RELEASE}" -lt 8 ]]; then
-    # IUS gives us recent (but stable) packages on previous CentOS releases...
-    sudo yum -q -y --nogpgcheck install "https://repo.ius.io/ius-release-el${CENTOS_RELEASE}.rpm" || true
-    sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-IUS-${CENTOS_RELEASE}"
+# IUS gives us recent (but stable) packages...
+sudo yum -q -y --nogpgcheck install "https://repo.ius.io/ius-release-el${CENTOS_RELEASE}.rpm" || true
+sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-IUS-${CENTOS_RELEASE}"
 
-    # Starting with RHEL/CentOS 8, Red Hat recommends podman/buildah for container-based
-    # projects and the official (upstream) Docker packages no longer install cleanly. :/
-    sudo yum -q -y install bridge-utils
-    sudo rpm --import "https://download.docker.com/linux/centos/gpg"
-    sudo yum-config-manager --add-repo "https://download.docker.com/linux/centos/docker-ce.repo" >/dev/null
-fi
+# For container-based projects, we'll want to use the official Docker packages...
+sudo yum -q -y install bridge-utils
+sudo rpm --import "https://download.docker.com/linux/centos/gpg"
+sudo yum-config-manager --add-repo "https://download.docker.com/linux/centos/docker-ce.repo" >/dev/null
 
 # No packages from the above repositories have been installed,
 # but prepare things for that to (maybe) happen further below...
-sudo yum -q -y makecache $([[ "${CENTOS_RELEASE}" -ge 8 ]] && echo "--timer" || echo "fast")
+sudo yum -q -y makecache fast
 
 
-echo "provision.sh: Running project-specific actions..."
+echo "provision-v7.sh: Running project-specific actions..."
 
 # Install extra packages needed for the project...
 sudo yum -q -y install \
@@ -122,7 +116,7 @@ sudo yum -q -y install \
 # [...]
 
 
-echo "provision.sh: Done!"
+echo "provision-v7.sh: Done!"
 
 
 # vim: set expandtab ts=4 sw=4:
