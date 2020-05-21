@@ -80,6 +80,12 @@ echo -n | sudo tee /etc/motd >/dev/null
 
 echo "provision-v8.sh: Configuring custom repositories..."
 
+#
+# The IUS and Docker repositores are no longer configured. The first because
+# it doesn't support CentOS 8, and the second because its packages no longer
+# install cleanly due to Red Hat's choice of "podman" as its container tool.
+#
+
 # NGINX mainline gives us an updated (but production-ready) version...
 sudo rpm --import "https://nginx.org/keys/nginx_signing.key"
 sudo tee "/etc/yum.repos.d/nginx-mainline.repo" >/dev/null <<EOF
