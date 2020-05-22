@@ -16,8 +16,8 @@ readonly CENTOS_RELEASE="$(rpm -q --queryformat '%{VERSION}' centos-release | cu
 
 sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial"
 
-sudo dnf -q -y clean all
-sudo dnf -q -y makecache --timer
+sudo dnf -q clean expire-cache
+sudo dnf -q -y makecache
 
 # EPEL gives us some essential base-system extras...
 sudo dnf -q -y --nogpgcheck install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${CENTOS_RELEASE}.noarch.rpm" || true
@@ -98,7 +98,8 @@ EOF
 
 # No packages from the above repositories have been installed,
 # but prepare things for that to (maybe) happen further below...
-sudo dnf -q -y makecache --timer
+sudo dnf -q clean expire-cache
+sudo dnf -q -y makecache
 
 
 echo "provision-v8.sh: Running project-specific actions..."

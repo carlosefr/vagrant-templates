@@ -32,7 +32,7 @@ fi
 
 sudo rm -f /var/cache/dnf/fastestmirror.cache
 sudo dnf -q clean expire-cache
-sudo dnf -q makecache --timer
+sudo dnf -q makecache
 
 # This is required to avoid a conflict with "vim" below... :(
 sudo dnf -q -y upgrade vim-minimal
@@ -118,7 +118,8 @@ fi
 
 # No packages from the above repositories have been installed,
 # but prepare things for that to (maybe) happen further below...
-sudo dnf -q -y makecache --timer
+sudo dnf -q clean expire-cache
+sudo dnf -q -y makecache
 
 
 echo "provision.sh: Running project-specific actions..."
