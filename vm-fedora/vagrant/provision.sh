@@ -19,11 +19,7 @@ else
 fi
 
 # Fix DNS breakage on reprovisioning (sometimes)...
-if [ -f /etc/init.d/network ]; then
-    sudo systemctl restart network  # ...Fedora <= 28
-else
-    sudo systemctl restart NetworkManager
-fi
+sudo systemctl restart NetworkManager
 
 # Ensure DNF chooses a decent mirror, otherwise things may be *very* slow...
 if ! grep -q "fastestmirror=true" /etc/dnf/dnf.conf; then
@@ -101,7 +97,7 @@ sudo dnf config-manager --add-repo "https://download.docker.com/linux/fedora/doc
 
 # If this version of Fedora isn't supported yet, use packages intended for the previous one...
 if ! curl -sSL "https://download.docker.com/linux/fedora/${FEDORA_RELEASE}/source/stable/Packages/" | grep -q "\.src\.rpm"; then
-    echo "No upstream Docker packages for Fedora ${FEDORA_RELEASE}, using Fedora $((FEDORA_RELEASE-1)) packages instead." >&2
+    echo "No upstream Docker CE packages for Fedora ${FEDORA_RELEASE}, using packages for Fedora $((FEDORA_RELEASE-1)) instead." >&2
     sudo sed -i "s|/fedora/\$releasever|/fedora/$((FEDORA_RELEASE-1))|g" /etc/yum.repos.d/docker-ce.repo
 else  # ...reverse on reprovision.
     sudo sed -i "s|/fedora/$((FEDORA_RELEASE-1))|/fedora/\$releasever|g" /etc/yum.repos.d/docker-ce.repo
