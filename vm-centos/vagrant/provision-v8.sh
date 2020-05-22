@@ -80,12 +80,6 @@ echo -n | sudo tee /etc/motd >/dev/null
 
 echo "provision-v8.sh: Configuring custom repositories..."
 
-#
-# The IUS and Docker repositores are no longer configured. The first because
-# it doesn't support CentOS 8, and the second because its packages no longer
-# install cleanly due to Red Hat's choice of "podman" as its container tool.
-#
-
 # NGINX mainline gives us an updated (but production-ready) version...
 sudo rpm --import "https://nginx.org/keys/nginx_signing.key"
 sudo tee "/etc/yum.repos.d/nginx-mainline.repo" >/dev/null <<EOF
@@ -97,6 +91,28 @@ enabled=1
 priority=10
 module_hotfixes=1
 EOF
+
+# For container-based projects, we'll want to keep using the official Docker
+# packages for the time being, instead of switching to podman/buildah...
+sudo rpm --import "https://download.docker.com/linux/centos/gpg"
+sudo tee "/etc/yum.repos.d/docker-ce-stable.repo" >/dev/null <<EOF
+[docker-ce-stable]
+name=Docker CE (stable)
+baseurl=https://download.docker.com/linux/centos/\$releasever/\$basearch/stable
+gpgcheck=1
+enabled=1
+priority=10
+module_hotfixes=1
+EOF
+
+# If this version of CentOS isn't supported yet, use packages intended for the previous one...
+if ! curl -sSL "https://download.docker.com/linux/centos/${CENTOS_RELEASE}/source/stable/Packages/" | grep -q "\.src\.rpm"; then
+    echo "No upstream Docker CE packages for CentOS ${CENTOS_RELEASE}, using packages for CentOS $((CENTOS_RELEASE-1)) instead." >&2
+    sudo sed -i "s|/centos/\$releasever|/centos/$((CENTOS_RELEASE-1))|g" /etc/yum.repos.d/docker-ce-stable.repo
+else  # ...reverse on reprovision.
+    sudo sed -i "s|/centos/$((CENTOS_RELEASE-1))|/centos/\$releasever|g" /etc/yum.repos.d/docker-ce-stable.repo
+fi
+
 
 # No packages from the above repositories have been installed,
 # but prepare things for that to (maybe) happen further below...
