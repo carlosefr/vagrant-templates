@@ -7,9 +7,9 @@
 require 'json'
 
 
-# Provisioning might need updating for different Fedora
-# releases, see the "provision.sh" script for details...
-fedora_release = 30
+# Provisioning might need updating for different Fedora releases, see
+# the "provision.sh" script for details. Only Fedora 32 was tested...
+fedora_release = 32
 
 # This is the minimum customization necessary but, to tailor this configuration
 # to a specific project, you should also edit the "vagrant/provision.sh" script...
@@ -85,6 +85,9 @@ Vagrant.configure(2) do |config|
     # Perform base-system customizations and install project-specific dependencies...
     config.vm.provision "shell", path: "#{vagrant_assets}/provision.sh",
                                  privileged: false  # ...run as the "vagrant" user.
+
+    # Some provisioning steps might require a reboot...
+    config.vm.provision :reload
 
     config.ssh.forward_agent = true
     config.ssh.keep_alive = true

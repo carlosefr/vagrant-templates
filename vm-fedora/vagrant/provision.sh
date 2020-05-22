@@ -32,7 +32,7 @@ fi
 
 sudo rm -f /var/cache/dnf/fastestmirror.cache
 sudo dnf -q clean expire-cache
-sudo dnf -q makecache
+sudo dnf -q makecache --timer
 
 # This is required to avoid a conflict with "vim" below... :(
 sudo dnf -q -y upgrade vim-minimal
@@ -82,15 +82,21 @@ rsync -r --exclude=.DS_Store "${HOME}/shared/vagrant/skel/" "${HOME}/"
 
 echo "provision.sh: Configuring custom repositories..."
 
-# NGINX mainline gives us an updated version (using the RHEL7 packages)...
+# Ensure we always have the latest NGINX version available...
 sudo rpm --import "https://nginx.org/keys/nginx_signing.key"
 sudo tee "/etc/yum.repos.d/nginx-mainline.repo" >/dev/null <<EOF
 [nginx-mainline]
-name=NGINX Mainline
-baseurl=https://nginx.org/packages/mainline/rhel/7/\$basearch/
+name=nginx.org (mainline)
+baseurl=https://nginx.org/packages/mainline/centos/8/\$basearch/
 gpgcheck=1
 enabled=1
+priority=10
 EOF
+
+if dnf info nginx --repo=fedora >/dev/null 2>&1; then
+    echo "The NGINX mainline repository was configured but Fedora ${FEDORA_RELEASE} also contains NGINX packages." >&2
+    echo "Use the '--repo=nginx-mainline' DNF option to select the upstream packages (not needed when updating)." >&2
+fi
 
 # For container-based projects, we'll want to use the official Docker packages...
 sudo dnf -q -y install bridge-utils
@@ -99,14 +105,20 @@ sudo dnf config-manager --add-repo "https://download.docker.com/linux/fedora/doc
 
 # If this version of Fedora isn't supported yet, use packages intended for the previous one...
 if ! curl -sSL "https://download.docker.com/linux/fedora/${FEDORA_RELEASE}/source/stable/Packages/" | grep -q "\.src\.rpm"; then
+    echo "No upstream Docker packages for Fedora ${FEDORA_RELEASE}, using Fedora $((FEDORA_RELEASE-1)) packages instead." >&2
     sudo sed -i "s|/fedora/\$releasever|/fedora/$((FEDORA_RELEASE-1))|g" /etc/yum.repos.d/docker-ce.repo
 else  # ...reverse on reprovision.
     sudo sed -i "s|/fedora/$((FEDORA_RELEASE-1))|/fedora/\$releasever|g" /etc/yum.repos.d/docker-ce.repo
 fi
 
+if [[ ${FEDORA_RELEASE} -ge 31 ]]; then
+    echo "Configuring kernel to use cgroup v1. Fedora ${FEDORA_RELEASE} selects cgroup v2 by default but Docker doesn't support it." >&2
+    sudo grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"
+fi
+
 # No packages from the above repositories have been installed,
 # but prepare things for that to (maybe) happen further below...
-sudo dnf -q -y makecache
+sudo dnf -q -y makecache --timer
 
 
 echo "provision.sh: Running project-specific actions..."
