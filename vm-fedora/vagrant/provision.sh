@@ -91,12 +91,8 @@ baseurl=https://nginx.org/packages/mainline/centos/8/\$basearch/
 gpgcheck=1
 enabled=1
 priority=10
+module_hotfixes=1
 EOF
-
-if dnf info nginx --repo=fedora >/dev/null 2>&1; then
-    echo "The NGINX mainline repository was configured but Fedora ${FEDORA_RELEASE} also contains NGINX packages." >&2
-    echo "Use the '--repo=nginx-mainline' DNF option to select the upstream packages (not needed when updating)." >&2
-fi
 
 # For container-based projects, we'll want to use the official Docker packages...
 sudo dnf -q -y install bridge-utils

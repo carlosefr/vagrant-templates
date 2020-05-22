@@ -90,10 +90,12 @@ echo "provision-v8.sh: Configuring custom repositories..."
 sudo rpm --import "https://nginx.org/keys/nginx_signing.key"
 sudo tee "/etc/yum.repos.d/nginx-mainline.repo" >/dev/null <<EOF
 [nginx-mainline]
-name=NGINX Mainline
+name=nginx.org (mainline)
 baseurl=https://nginx.org/packages/mainline/centos/\$releasever/\$basearch/
 gpgcheck=1
 enabled=1
+priority=10
+module_hotfixes=1
 EOF
 
 # No packages from the above repositories have been installed,
