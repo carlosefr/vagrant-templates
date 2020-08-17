@@ -103,9 +103,9 @@ echo "provision.sh: Configuring custom repositories..."
 # Use packages for the previous Ubuntu release if the current one isn't supported yet.
 # NGINX upstream takes a while to catch up, as they don't rebuild existing packages.
 #
-readonly NGINX_POOL="https://nginx.org/packages/mainline/ubuntu/dists/${DISTRO_CODENAME}/nginx/binary-amd64"
+readonly NGINX_POOL="https://nginx.org/packages/mainline/ubuntu/pool/nginx/n/nginx/"
 
-if [ "$DISTRO_CODENAME" = "${DISTRO_CODENAMES[0]}" ] && ! curl -sSL "$NGINX_POOL" | cat | grep -q "\.deb"; then
+if [ "$DISTRO_CODENAME" = "${DISTRO_CODENAMES[0]}" ] && ! curl -sSL "$NGINX_POOL" | cat | grep -q "${DISTRO_CODENAME}_amd64\.deb"; then
     readonly NGINX_DISTRO_CODENAME="${DISTRO_CODENAMES[1]}"
     echo "No NGINX packages for '${DISTRO_CODENAME}' release, using '${NGINX_DISTRO_CODENAME}' instead." >&2
 fi
