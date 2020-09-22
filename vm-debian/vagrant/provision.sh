@@ -74,6 +74,9 @@ fi
 rsync -r --exclude=.DS_Store "${HOME}/shared/vagrant/skel/" "${HOME}/"
 sudo rm -f /etc/update-motd.d/99-bento && echo -n | sudo tee /etc/motd >/dev/null
 
+# Disable verbose messages on login...
+echo -n > "${HOME}/.hushlogin"
+
 
 echo "provision.sh: Configuring custom repositories..."
 
