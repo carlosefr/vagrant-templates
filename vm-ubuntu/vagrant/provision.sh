@@ -29,7 +29,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq update
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
     avahi-daemon mlocate rsync lsof iotop htop \
     ntpdate pv tree vim screen tmux ltrace strace \
-    curl apt-transport-https dnsutils zip unzip
+    curl apt-transport-https dnsutils zip unzip net-tools
 
 # This is just a matter of preference...
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install netcat-openbsd
@@ -42,6 +42,10 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y autoremove
 
 # This delays boot by *a lot* for no apparent reason...
 sudo systemctl -q mask systemd-networkd-wait-online
+
+# We don't want the system to change behind our backs...
+sudo systemctl stop unattended-upgrades
+sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge unattended-upgrades
 
 # Set a local timezone (the default for Ubuntu boxes is GMT)...
 sudo timedatectl set-timezone "Europe/Lisbon"
