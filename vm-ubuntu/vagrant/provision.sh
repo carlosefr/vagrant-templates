@@ -44,7 +44,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y autoremove
 sudo systemctl -q mask systemd-networkd-wait-online
 
 # We don't want the system to change behind our backs...
-sudo systemctl stop unattended-upgrades
+sudo systemctl -q is-active unattended-upgrades && sudo systemctl stop unattended-upgrades
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge unattended-upgrades
 
 # Set a local timezone (the default for Ubuntu boxes is GMT)...
