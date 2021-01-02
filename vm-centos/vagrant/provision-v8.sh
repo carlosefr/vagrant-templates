@@ -12,7 +12,7 @@ fi
 
 echo "provision-v8.sh: Customizing the base system..."
 
-readonly CENTOS_RELEASE="$(rpm -q --queryformat '%{VERSION}' centos-release | cut -d. -f1)"
+readonly CENTOS_RELEASE="$(rpm -q --queryformat '%{VERSION}' $(rpm -qf /etc/centos-release) | cut -d. -f1)"
 
 sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial"
 
