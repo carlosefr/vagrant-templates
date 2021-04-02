@@ -12,7 +12,7 @@ fi
 
 echo "provision-v8.sh: Customizing the base system..."
 
-readonly CENTOS_RELEASE="$(rpm -q --queryformat '%{VERSION}' $(rpm -qf /etc/centos-release) | cut -d. -f1)"
+readonly CENTOS_RELEASE="$(rpm -q --queryformat '%{VERSION}' "$(rpm -qf /etc/centos-release)" | cut -d. -f1)"
 
 sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial"
 
@@ -106,7 +106,7 @@ module_hotfixes=1
 EOF
 
 # If this version of CentOS isn't supported yet, use packages intended for the previous one...
-if ! curl -sSL "https://download.docker.com/linux/centos/${CENTOS_RELEASE}/source/stable/Packages/" | grep -q "\.src\.rpm"; then
+if ! curl -sSL "https://download.docker.com/linux/centos/${CENTOS_RELEASE}/source/stable/Packages/" | cat | grep -q "\.src\.rpm"; then
     echo "No upstream Docker CE packages for CentOS ${CENTOS_RELEASE}, using packages for CentOS $((CENTOS_RELEASE-1)) instead." >&2
     sudo sed -i "s|/centos/\$releasever|/centos/$((CENTOS_RELEASE-1))|g" /etc/yum.repos.d/docker-ce-stable.repo
 else  # ...reverse on reprovision.
