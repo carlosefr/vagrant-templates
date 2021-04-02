@@ -96,14 +96,15 @@ sudo rpm --import "https://download.docker.com/linux/fedora/gpg"
 sudo dnf config-manager --add-repo "https://download.docker.com/linux/fedora/docker-ce.repo"
 
 # If this version of Fedora isn't supported yet, use packages intended for the previous one...
-if ! curl -sSL "https://download.docker.com/linux/fedora/${FEDORA_RELEASE}/source/stable/Packages/" | grep -q "\.src\.rpm"; then
+if ! curl -sSL "https://download.docker.com/linux/fedora/${FEDORA_RELEASE}/source/stable/Packages/" | cat | grep -q "\.src\.rpm"; then
     echo "No upstream Docker CE packages for Fedora ${FEDORA_RELEASE}, using packages for Fedora $((FEDORA_RELEASE-1)) instead." >&2
     sudo sed -i "s|/fedora/\$releasever|/fedora/$((FEDORA_RELEASE-1))|g" /etc/yum.repos.d/docker-ce.repo
 else  # ...reverse on reprovision.
     sudo sed -i "s|/fedora/$((FEDORA_RELEASE-1))|/fedora/\$releasever|g" /etc/yum.repos.d/docker-ce.repo
 fi
 
-if [[ ${FEDORA_RELEASE} -ge 31 ]]; then
+# Docker already supports cgroup v2 since v20.10, do nothing if sufficiently recent...
+if [[ ${FEDORA_RELEASE} -ge 31 && ${FEDORA_RELEASE} -le 32 ]]; then
     echo "Configuring kernel to use cgroup v1. Fedora ${FEDORA_RELEASE} selects cgroup v2 by default but Docker doesn't support it." >&2
     sudo grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"
 fi
