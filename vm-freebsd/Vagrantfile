@@ -60,8 +60,15 @@ Vagrant.configure(2) do |config|
         vm.cpus = vm_size["cpus"]
         vm.default_nic_type = "virtio"
 
-        # Resolve names using the host's stub resolver (useful for VPNs)...
-        vm.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+        #
+        # Resolve names using the host's configured DNS resolvers, but hide their actual IP
+        # addresses from the guest (useful if they come from DHCP and are subject to change).
+        #
+        # It is sometimes useful to use "--natdnshostresolver1" instead, to use the host's
+        # stub resolver APIs (i.e. when using VPN software that hijacks DNS resolution), but
+        # beware that this comes with some caveats (e.g. musl doesn't deal with it very well).
+        #
+        vm.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
 
         # No need for audio in a server-type VM...
         vm.customize ["modifyvm", :id, "--audio", "none"]
