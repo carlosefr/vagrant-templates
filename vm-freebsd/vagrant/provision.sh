@@ -69,7 +69,7 @@ sudo chsh -s /usr/local/bin/bash "${USER}"
 
 # Make "vagrant ssh" sessions more comfortable by tweaking the
 # configuration of some system utilities (eg. bash, vim, tmux)...
-rsync -r --exclude=.DS_Store "${HOME}/rsynced/vagrant/skel/" "${HOME}/"
+rsync -r --exclude=.DS_Store "${HOME}/shared/vagrant/skel/" "${HOME}/"
 
 
 echo "provision.sh: Running project-specific actions..."
