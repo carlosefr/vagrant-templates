@@ -24,7 +24,7 @@ sudo dnf -q -y --nogpgcheck install "https://dl.fedoraproject.org/pub/epel/epel-
 sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-${CENTOS_RELEASE}"
 
 sudo dnf -q -y install \
-    avahi mlocate lsof iotop \
+    avahi nss-mdns mlocate lsof iotop \
     htop nmap-ncat pv tree vim tmux ltrace strace \
     sysstat perf zip unzip bind-utils man-pages
 
