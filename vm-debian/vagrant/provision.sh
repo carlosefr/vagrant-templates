@@ -14,7 +14,7 @@ echo "provision.sh: Customizing the base system..."
 
 readonly DISTRO_CODENAME="$(lsb_release -cs)"
 
-sudo DEBIAN_FRONTEND=noninteractive apt-get -qq update
+sudo DEBIAN_FRONTEND=noninteractive apt-get -qq --allow-releaseinfo-change update
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
     avahi-daemon mlocate rsync lsof iotop htop \
     ntpdate pv tree vim screen tmux ltrace strace \
