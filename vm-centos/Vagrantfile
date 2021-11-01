@@ -9,13 +9,14 @@ require 'json'
 
 # Provisioning might need updating for different CentOS releases, see
 # the provision scripts for details. Only CentOS 7 and 8 were tested...
-centos_release = 8
+centos_release = "stream-8"
 
+centos_release_number = centos_release.match(/([0-9]+)$/)[1].to_i
 
 # This is the minimum customization necessary but, to tailor this configuration
 # to a specific project, you should also edit the "vagrant/provision.sh" script...
-vm_name = "Generic CentOS #{centos_release}.x"
-vm_hostname = "vagrant-centos-#{centos_release}x"
+vm_name = "Generic CentOS #{centos_release_number}.x"
+vm_hostname = "vagrant-centos-#{centos_release_number}x"
 vm_size = {"cpus" => 1, "memory" => 1024}
 
 # Use a box with included guest additions, to avoid occasional provisioning problems.
@@ -83,7 +84,7 @@ Vagrant.configure(2) do |config|
     config.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "/tmp/id_rsa.pub"
 
     # Perform base-system customizations and install project-specific dependencies...
-    config.vm.provision "shell", path: "#{vagrant_assets}/provision-v#{centos_release >= 8 ? 8 : 7}.sh",
+    config.vm.provision "shell", path: "#{vagrant_assets}/provision-v#{centos_release_number >= 8 ? 8 : 7}.sh",
                                  privileged: false  # ...run as the "vagrant" user.
 
     config.ssh.forward_agent = true
