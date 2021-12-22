@@ -67,7 +67,11 @@ end
 
 
 Vagrant.configure(2) do |config|
-    config.vagrant.plugins = ["vagrant-vbguest"]
+    builtin_guest_additions = vm_box.match(/^(?:carlosefr|bento)/)
+
+    if !builtin_guest_additions
+        config.vagrant.plugins = ["vagrant-vbguest"]
+    end
 
     config.vm.box = vm_box
     config.vm.box_version = vm_box_version.nil? ? vm_box_version : ">= 0"
@@ -112,8 +116,10 @@ Vagrant.configure(2) do |config|
         vm.customize ["modifyvm", :id, "--audio", "none"]
 
         # Install guest additions automatically (if not already builtin)...
-        override.vbguest.auto_update = !config.vm.box.match(/^(?:carlosefr|bento)/)
-        override.vbguest.allow_downgrade = false
+        if Vagrant.has_plugin?("vagrant-vbguest")
+            override.vbguest.auto_update = !builtin_guest_additions
+            override.vbguest.allow_downgrade = false
+        end
 
         # Expose the VM to the host instead of forwarding many ports individually
         # for complex projects. The provisioning script will setup Avahi/mDNS to
