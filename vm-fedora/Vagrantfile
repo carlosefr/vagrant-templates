@@ -8,8 +8,8 @@ require 'json'
 
 
 # Provisioning might need updating for different Fedora releases, see
-# the "provision.sh" script for details. Only Fedora 32 was tested...
-fedora_release = 33
+# the "provision.sh" script for details. Only Fedora 35 was tested...
+fedora_release = 35
 
 # This is the minimum customization necessary but, to tailor this configuration
 # to a specific project, you should also edit the "vagrant/provision.sh" script...
@@ -20,7 +20,7 @@ vm_size = {"cpus" => 1, "memory" => 1024}
 
 # The box is assumed to be readily usable by default, but all available
 # system updates can be installed during provisioning, if necessary...
-install_system_updates = true
+install_system_updates = false
 
 
 # Location of the external files used by this script...
@@ -34,35 +34,7 @@ if File.exists?(vm_size_override)
 end
 
 
-# There is a very high probability that DNF's choice of mirror turns out to
-# be a dud. Ensure "fastestmirror" is enabled as early as possible, otherwise
-# installing dependencies for the guest additions may take a *very* long time...
-begin
-    class TweakGuestAdditions < VagrantVbguest::Installers::Fedora
-        def dependencies
-            super + " '*/lib64/libcrypt.so.1'"
-        end
-
-        def install_dependencies_cmd
-            'grep -q fastestmirror=true /etc/dnf/dnf.conf || echo fastestmirror=true >>/etc/dnf/dnf.conf; ' \
-            'rm -f /var/cache/dnf/fastestmirror.cache; ' \
-            'dnf -q clean expire-cache; ' \
-            "echo 'Installing build dependencies...'; " \
-            'dnf -q -y install ' + dependencies
-        end
-    end
-
-    # Anything with priority over 5 overrides the default installer...
-    VagrantVbguest::Installer.register(TweakGuestAdditions, 100)
-rescue NameError
-    # The "VagrantVbguest" class won't be available during the first pass,
-    # when vagrant is checking for required plugins and stuff like that...
-end
-
-
 Vagrant.configure(2) do |config|
-    config.vagrant.plugins = ["vagrant-vbguest", "vagrant-reload"]
-
     config.vm.box = "fedora/#{fedora_release}-cloud-base"
     config.vm.hostname = vm_hostname
 
@@ -70,6 +42,7 @@ Vagrant.configure(2) do |config|
     config.vm.synced_folder ".", "/vagrant", disabled: true
 
     if install_system_updates
+        config.vagrant.plugins = ["vagrant-reload"]
         config.vm.provision "shell", path: "#{vagrant_assets}/updates.sh",
                                      privileged: false  # ...run as the "vagrant" user.
         config.vm.provision :reload
@@ -85,9 +58,6 @@ Vagrant.configure(2) do |config|
     # Perform base-system customizations and install project-specific dependencies...
     config.vm.provision "shell", path: "#{vagrant_assets}/provision.sh",
                                  privileged: false  # ...run as the "vagrant" user.
-
-    # Some provisioning steps might require a reboot...
-    config.vm.provision :reload
 
     config.ssh.forward_agent = true
     config.ssh.keep_alive = true
@@ -113,8 +83,11 @@ Vagrant.configure(2) do |config|
         # No need for audio in a server-type VM...
         vm.customize ["modifyvm", :id, "--audio", "none"]
 
-        # Install guest additions automatically...
-        override.vbguest.auto_update = true
+        # The guest additions are already built-in...
+        if Vagrant.has_plugin?("vagrant-vbguest")
+            override.vbguest.auto_update = false
+            override.vbguest.allow_downgrade = false
+        end
 
         # Expose the VM to the host instead of forwarding many ports individually
         # for complex projects. The provisioning script will setup Avahi/mDNS to

@@ -34,7 +34,7 @@ sudo dnf -q makecache
 sudo dnf -q -y upgrade vim-minimal
 sudo dnf -q -y install \
     avahi mlocate lsof iotop htop nmap-ncat \
-    ntpdate pv tree vim tmux ltrace strace \
+    pv tree vim tmux ltrace strace \
     sysstat perf zip unzip bind-utils pciutils
 
 # Set a local timezone (default is UTC)...
@@ -101,12 +101,6 @@ if ! curl -sSL "https://download.docker.com/linux/fedora/${FEDORA_RELEASE}/sourc
     sudo sed -i "s|/fedora/\$releasever|/fedora/$((FEDORA_RELEASE-1))|g" /etc/yum.repos.d/docker-ce.repo
 else  # ...reverse on reprovision.
     sudo sed -i "s|/fedora/$((FEDORA_RELEASE-1))|/fedora/\$releasever|g" /etc/yum.repos.d/docker-ce.repo
-fi
-
-# Docker already supports cgroup v2 since v20.10, do nothing if sufficiently recent...
-if [[ ${FEDORA_RELEASE} -ge 31 && ${FEDORA_RELEASE} -le 32 ]]; then
-    echo "Configuring kernel to use cgroup v1. Fedora ${FEDORA_RELEASE} selects cgroup v2 by default but Docker doesn't support it." >&2
-    sudo grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"
 fi
 
 # No packages from the above repositories have been installed,
