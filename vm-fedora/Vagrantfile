@@ -17,9 +17,7 @@ vm_name = "Generic Fedora #{fedora_release}"
 vm_hostname = "vagrant-fedora-#{fedora_release}"
 vm_size = {"cpus" => 1, "memory" => 1024}
 
-
-# The box is assumed to be readily usable by default, but all available
-# system updates can be installed during provisioning, if necessary...
+# Fedora boxes aren't usually updated after initial release...
 install_system_updates = false
 
 

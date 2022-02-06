@@ -26,26 +26,33 @@ if [[ "${#DISTRO_CODENAMES[@]}" -lt 2 ]]; then
 fi
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq update
+
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
     avahi-daemon mlocate rsync lsof iotop htop \
     ntpdate pv tree vim screen tmux ltrace strace \
     curl apt-transport-https dnsutils zip unzip net-tools
 
-# This is just a matter of preference...
-sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install netcat-openbsd
-sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge netcat-traditional
-
 # Minimize the number of running daemons...
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge \
-    lxcfs snapd open-iscsi mdadm accountsservice acpid
-sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y autoremove
+    lxcfs snapd open-iscsi mdadm accountsservice acpid multipath-tools
 
 # This delays boot by *a lot* for no apparent reason...
 sudo systemctl -q mask systemd-networkd-wait-online
 
 # We don't want the system to change behind our backs...
 sudo systemctl -q is-active unattended-upgrades && sudo systemctl stop unattended-upgrades
+sudo rm -f /var/log/unattended-upgrades/unattended-upgrades-shutdown.log
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge unattended-upgrades
+
+# This is just a matter of preference...
+sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install netcat-openbsd
+sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge netcat-traditional
+
+sudo rm -f /var/lib/command-not-found/commands.db*
+sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge command-not-found
+
+# Mop up...
+sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y autoremove --purge
 
 # Set a local timezone (the default for Ubuntu boxes is GMT)...
 sudo timedatectl set-timezone "Europe/Lisbon"
@@ -114,10 +121,13 @@ if [ "$DISTRO_CODENAME" = "${DISTRO_CODENAMES[0]}" ] && ! curl -sSL "$NGINX_POOL
     echo "No NGINX packages for '${DISTRO_CODENAME}' release, using '${NGINX_DISTRO_CODENAME}' instead." >&2
 fi
 
-curl -fsSL "https://nginx.org/keys/nginx_signing.key" | sudo apt-key add -
+curl -fsSL "https://nginx.org/keys/nginx_signing.key" \
+    | gpg --dearmor \
+    | sudo tee "/usr/share/keyrings/nginx-archive-keyring.gpg" >/dev/null
+
 sudo tee "/etc/apt/sources.list.d/nginx-mainline.list" >/dev/null <<EOF
-deb https://nginx.org/packages/mainline/ubuntu/ ${NGINX_DISTRO_CODENAME:-$DISTRO_CODENAME} nginx
-deb-src https://nginx.org/packages/mainline/ubuntu/ ${NGINX_DISTRO_CODENAME:-$DISTRO_CODENAME} nginx
+deb [arch=amd64 signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] https://nginx.org/packages/mainline/ubuntu/ ${NGINX_DISTRO_CODENAME:-$DISTRO_CODENAME} nginx
+deb-src [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] https://nginx.org/packages/mainline/ubuntu/ ${NGINX_DISTRO_CODENAME:-$DISTRO_CODENAME} nginx
 EOF
 
 sudo tee "/etc/apt/preferences.d/nginx-pinning" >/dev/null <<EOF
@@ -141,9 +151,13 @@ if [ "$DISTRO_CODENAME" = "${DISTRO_CODENAMES[0]}" ] && ! curl -sSL "$DOCKER_POO
 fi
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install bridge-utils
-curl -fsSL "https://download.docker.com/linux/ubuntu/gpg" | sudo apt-key add -
+
+curl -fsSL "https://download.docker.com/linux/ubuntu/gpg" \
+    | gpg --dearmor \
+    | sudo tee "/usr/share/keyrings/docker-stable-archive-keyring.gpg" >/dev/null
+
 sudo tee "/etc/apt/sources.list.d/docker-stable.list" >/dev/null <<EOF
-deb [arch=amd64] https://download.docker.com/linux/ubuntu ${DOCKER_DISTRO_CODENAME:-$DISTRO_CODENAME} stable
+deb [arch=amd64 signed-by=/usr/share/keyrings/docker-stable-archive-keyring.gpg] https://download.docker.com/linux/ubuntu ${DOCKER_DISTRO_CODENAME:-$DISTRO_CODENAME} stable
 EOF
 
 sudo tee "/etc/apt/preferences.d/docker-pinning" >/dev/null <<EOF

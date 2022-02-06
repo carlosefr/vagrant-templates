@@ -15,6 +15,7 @@ echo "provision.sh: Customizing the base system..."
 readonly DISTRO_CODENAME="$(lsb_release -cs)"
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq --allow-releaseinfo-change update
+
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
     avahi-daemon mlocate rsync lsof iotop htop \
     ntpdate pv tree vim screen tmux ltrace strace \
@@ -81,10 +82,13 @@ echo -n > "${HOME}/.hushlogin"
 echo "provision.sh: Configuring custom repositories..."
 
 # NGINX mainline gives us an updated (but production-ready) version...
-curl -fsSL "https://nginx.org/keys/nginx_signing.key" | sudo apt-key add -
+curl -fsSL "https://nginx.org/keys/nginx_signing.key" \
+    | gpg --dearmor \
+    | sudo tee "/usr/share/keyrings/nginx-archive-keyring.gpg" >/dev/null
+
 sudo tee "/etc/apt/sources.list.d/nginx-mainline.list" >/dev/null <<EOF
-deb https://nginx.org/packages/mainline/debian/ ${DISTRO_CODENAME} nginx
-deb-src https://nginx.org/packages/mainline/debian/ ${DISTRO_CODENAME} nginx
+deb [arch=amd64 signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] https://nginx.org/packages/mainline/debian/ ${DISTRO_CODENAME} nginx
+deb-src [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] https://nginx.org/packages/mainline/debian/ ${DISTRO_CODENAME} nginx
 EOF
 
 sudo tee "/etc/apt/preferences.d/nginx-pinning" >/dev/null <<EOF
@@ -96,9 +100,13 @@ EOF
 
 # For container-based projects, we'll want to use the official Docker packages...
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install bridge-utils
-curl -fsSL "https://download.docker.com/linux/debian/gpg" | sudo apt-key add -
+
+curl -fsSL "https://download.docker.com/linux/debian/gpg" \
+    | gpg --dearmor \
+    | sudo tee "/usr/share/keyrings/docker-stable-archive-keyring.gpg" >/dev/null
+
 sudo tee "/etc/apt/sources.list.d/docker-stable.list" >/dev/null <<EOF
-deb [arch=amd64] https://download.docker.com/linux/debian ${DISTRO_CODENAME} stable
+deb [arch=amd64 signed-by=/usr/share/keyrings/docker-stable-archive-keyring.gpg] https://download.docker.com/linux/debian ${DISTRO_CODENAME} stable
 EOF
 
 sudo tee "/etc/apt/preferences.d/docker-pinning" >/dev/null <<EOF
