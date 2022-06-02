@@ -9,8 +9,13 @@ require 'json'
 
 # Provisioning might need updating for different Ubuntu
 # releases, see the "provision.sh" script for details...
-ubuntu_release = "20.04"
-ubuntu_codenames = {"16.04" => "xenial", "18.04" => "bionic", "20.04" => "focal"}  # ...currently supported.
+ubuntu_release = "22.04"
+ubuntu_codenames = {
+    "16.04" => "xenial",
+    "18.04" => "bionic",
+    "20.04" => "focal",
+    "22.04" => "jammy",
+}
 
 
 # This is the minimum customization necessary but, to tailor this configuration

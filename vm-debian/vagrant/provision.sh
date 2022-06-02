@@ -21,10 +21,9 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
     ntpdate pv tree vim screen tmux ltrace strace \
     curl apt-transport-https dnsutils
 
-# This is just a matter of preference...
-sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install netcat-openbsd
-sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge netcat-traditional
-
+# Minimize the number of running daemons (not needed in this headless VM)...
+sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge \
+    wpasupplicant acpid
 
 # Set a local timezone (the default for Debian boxes is GMT)...
 sudo timedatectl set-timezone "Europe/Lisbon"

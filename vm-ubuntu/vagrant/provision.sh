@@ -28,13 +28,20 @@ fi
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq update
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
-    avahi-daemon mlocate rsync lsof iotop htop \
-    ntpdate pv tree vim screen tmux ltrace strace \
-    curl apt-transport-https dnsutils zip unzip net-tools
+    avahi-daemon mlocate rsync lsof iotop htop ntpdate pv tree \
+    vim screen tmux ltrace strace curl apt-transport-https dnsutils \
+    zip unzip net-tools moreutils
 
-# Minimize the number of running daemons...
+# Minimize the number of running daemons (not needed in this headless VM)...
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge \
-    lxcfs snapd open-iscsi mdadm accountsservice acpid multipath-tools
+    lxcfs snapd open-iscsi mdadm accountsservice acpid \
+    multipath-tools modemmanager udisks2
+
+# Same, but this needs to be explicitly stopped before uninstalling...
+if [[ -f /usr/lib/packagekit/packagekitd || -f /usr/libexec/packagekitd ]]; then
+    sudo systemctl -q is-active packagekit && sudo systemctl stop packagekit
+    sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge packagekit
+fi
 
 # This delays boot by *a lot* for no apparent reason...
 sudo systemctl -q mask systemd-networkd-wait-online
@@ -43,10 +50,6 @@ sudo systemctl -q mask systemd-networkd-wait-online
 sudo systemctl -q is-active unattended-upgrades && sudo systemctl stop unattended-upgrades
 sudo rm -f /var/log/unattended-upgrades/unattended-upgrades-shutdown.log
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge unattended-upgrades
-
-# This is just a matter of preference...
-sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install netcat-openbsd
-sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge netcat-traditional
 
 sudo rm -f /var/lib/command-not-found/commands.db*
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge command-not-found
@@ -69,8 +72,12 @@ echo "VM available from the host at: ${HOSTNAME}.local"
 # Prevent locale from being forwarded from the host, causing issues...
 if sudo grep -q '^AcceptEnv\s.*LC_' /etc/ssh/sshd_config; then
     sudo sed -i 's/^\(AcceptEnv\s.*LC_\)/#\1/' /etc/ssh/sshd_config
-    sudo systemctl restart ssh
 fi
+
+# This is disabled by default in Ubuntu 22.04, but Vagrant (2.2.19) may still use such a key...
+echo "PubkeyAcceptedKeyTypes +ssh-rsa" | sudo tee "/etc/ssh/sshd_config.d/vagrant_ssh_rsa.conf" >/dev/null
+
+sudo systemctl restart ssh
 
 # Generate the initial "locate" DB...
 if sudo test -x /etc/cron.daily/mlocate; then
@@ -116,7 +123,7 @@ echo "provision.sh: Configuring custom repositories..."
 #
 readonly NGINX_POOL="https://nginx.org/packages/mainline/ubuntu/pool/nginx/n/nginx/"
 
-if [ "$DISTRO_CODENAME" = "${DISTRO_CODENAMES[0]}" ] && ! curl -sSL "$NGINX_POOL" | cat | grep -q "${DISTRO_CODENAME}_amd64\.deb"; then
+if [[ "$DISTRO_CODENAME" = "${DISTRO_CODENAMES[0]}" ]] && ! curl -sSL "$NGINX_POOL" | sponge | grep -q "${DISTRO_CODENAME}_amd64\.deb"; then
     readonly NGINX_DISTRO_CODENAME="${DISTRO_CODENAMES[1]}"
     echo "No NGINX packages for '${DISTRO_CODENAME}' release, using '${NGINX_DISTRO_CODENAME}' instead." >&2
 fi
@@ -145,7 +152,7 @@ EOF
 #
 readonly DOCKER_POOL="https://download.docker.com/linux/ubuntu/dists/${DISTRO_CODENAME}/pool/stable/amd64/"
 
-if [ "$DISTRO_CODENAME" = "${DISTRO_CODENAMES[0]}" ] && ! curl -sSL "$DOCKER_POOL" | cat | grep -q "\.deb"; then
+if [[ "$DISTRO_CODENAME" = "${DISTRO_CODENAMES[0]}" ]] && ! curl -sSL "$DOCKER_POOL" | sponge | grep -q "\.deb"; then
     readonly DOCKER_DISTRO_CODENAME="${DISTRO_CODENAMES[1]}"
     echo "No Docker CE packages for '${DISTRO_CODENAME}' release, using '${DOCKER_DISTRO_CODENAME}' instead." >&2
 fi
