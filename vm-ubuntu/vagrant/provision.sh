@@ -28,7 +28,7 @@ fi
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq update
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
-    avahi-daemon mlocate rsync lsof iotop htop ntpdate pv tree \
+    avahi-daemon plocate rsync lsof iotop htop ntpdate pv tree \
     vim screen tmux ltrace strace curl apt-transport-https dnsutils \
     zip unzip net-tools moreutils
 
@@ -80,8 +80,8 @@ echo "PubkeyAcceptedKeyTypes +ssh-rsa" | sudo tee "/etc/ssh/sshd_config.d/vagran
 sudo systemctl restart ssh
 
 # Generate the initial "locate" DB...
-if sudo test -x /etc/cron.daily/mlocate; then
-    sudo /etc/cron.daily/mlocate
+if sudo test -x /etc/cron.daily/plocate; then
+    sudo /etc/cron.daily/plocate
 fi
 
 # Remove the spurious "you have mail" message on login...
