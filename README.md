@@ -12,19 +12,18 @@ These templates usually support "official" vagrant boxes, but some default to my
 
 ## Dependencies
 
-You'll need [VirtualBox](https://www.virtualbox.org/) and [Vagrant](https://www.vagrantup.com/). Some templates require the `vagrant-vbguest` plugin installed (to share folders with the host) and may also require the `vagrant-reload` plugin (to allow the VM to be immediately rebooted after provisioning).
-
-## Notes
+You'll need [VirtualBox](https://www.virtualbox.org/) and [Vagrant](https://www.vagrantup.com/). Some templates may ask to install the `vagrant-vbguest` plugin (to share folders with the host) on `vagrant up` if they need it.
 
 ### Host-Only Networking
 
 Starting with version 6.1.28, VirtualBox restricts the address ranges usable in [host-only networks](https://www.virtualbox.org/manual/ch06.html#network_hostonly) which causes `vagrant up` to fail as it tries to create an host-only network using a disallowed address range.
 
-To work around this, the templates in this repository force `vagrant up` to use the `vboxnet0` network, which must be created beforehand. Go to `File -> Host Network Manager` in VirtualBox and create the `vboxnet0` network if it doesn't already exist, also making sure it has the DHCP server enabled.
+To work around this, the templates in this repository force `vagrant up` to use the `vboxnet0` network, **which must be created beforehand**. Go to `File -> Host Network Manager` in VirtualBox and create the `vboxnet0` network if it doesn't already exist, also making sure it has the DHCP server enabled (default).
 
 ### Local Customization
 
 The default VM size is defined in the `Vagrantfile` but, sometimes, it's useful to locally override these settings without affecting other users of the same repo. Do this by creating a `.vagrant_size.json` next to the `Vagrantfile` with the following (example) contents:
+
 ```json
 {
     "cpus": 2,
@@ -35,6 +34,7 @@ The default VM size is defined in the `Vagrantfile` but, sometimes, it's useful 
 ### Guest Additions
 
 By default, the `vagrant-vbguest` plugin tries to install/update the VirtualBox Guest Additions on every `vagrant up`. I find this annoying and recommend you to disable this behavior by adding something like the following to your `~/.vagrant.d/Vagrantfile`:
+
 ```ruby
 Vagrant.configure(2) do |config|
     ...
@@ -47,11 +47,13 @@ Vagrant.configure(2) do |config|
     ...
 end
 ```
+
 The templates that need to install/update the VirtualBox Guest Additions already (re)enable `auto_update` explicitly.
 
 ### Clock Drift
 
-On older hosts the (VM) clocks may drift quite significantly with paravirtualization enabled, and I never quite figured out how to fix it. If you notice this happening, just add the following to your `~/.vagrant.d/Vagrantfile`:
+On older machines, the (VM) clocks may drift quite significantly with paravirtualization enabled. This is unlikely to happen nowadays but, if it does, add the following to your `~/.vagrant.d/Vagrantfile`:
+
 ```ruby
 Vagrant.configure(2) do |config|
     ...
