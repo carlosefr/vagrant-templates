@@ -50,10 +50,8 @@ Vagrant.configure(2) do |config|
     config.vm.synced_folder ".", "/vagrant", disabled: true
 
     if install_system_updates
-        config.vagrant.plugins = ["vagrant-reload"]
-        config.vm.provision "shell", path: "#{vagrant_assets}/updates.sh",
+        config.vm.provision "shell", path: "#{vagrant_assets}/updates.sh", reboot: true,
                                      privileged: false  # ...run as the "vagrant" user.
-        config.vm.provision :reload
     end
 
     # Provision the extra disk early, as it may be required by other provisioners...
