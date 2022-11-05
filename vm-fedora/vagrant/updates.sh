@@ -36,7 +36,7 @@ sudo dnf -q -y clean all
 
 readonly LATEST_KERNEL="$(rpm -q kernel-core --qf="%{VERSION}-%{RELEASE}.%{ARCH}\n" | sort --version-sort | tail -1)"
 
-if [[ ! -f "/lib/modules/${LATEST_KERNEL}/misc/vboxsf.ko" ]]; then
+if [[ ! -f "/lib/modules/${LATEST_KERNEL}/misc/vboxsf.ko" ]] && type -fp rcvboxadd >/dev/null; then
     echo "Kernel ${LATEST_KERNEL} needs third-party support for VirtualBox shared folders."
     sudo rcvboxadd quicksetup  # ...rebuild the modules.
 fi

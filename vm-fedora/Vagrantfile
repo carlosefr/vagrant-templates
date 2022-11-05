@@ -9,7 +9,7 @@ require 'json'
 
 # Provisioning might need updating for different Fedora releases, see
 # the "provision.sh" script for details. Only Fedora 35 was tested...
-fedora_release = 35
+fedora_release = 36
 
 # This is the minimum customization necessary but, to tailor this configuration
 # to a specific project, you should also edit the "vagrant/provision.sh" script...
@@ -40,10 +40,8 @@ Vagrant.configure(2) do |config|
     config.vm.synced_folder ".", "/vagrant", disabled: true
 
     if install_system_updates
-        config.vagrant.plugins = ["vagrant-reload"]
-        config.vm.provision "shell", path: "#{vagrant_assets}/updates.sh",
+        config.vm.provision "shell", path: "#{vagrant_assets}/updates.sh", reboot: true,
                                      privileged: false  # ...run as the "vagrant" user.
-        config.vm.provision :reload
     end
 
     # Support git operations inside the VM. The file provisioner requires files to exist,
