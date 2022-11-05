@@ -36,7 +36,7 @@ Vagrant.configure("2") do |config|
     config.ssh.keep_alive = true
 
     if not vm_gui  # ...no point having the GUI consuming resources when running headless.
-        config.vm.provision "shell", inline: "systemctl set-default multi-user.target", reboot: true
+        config.vm.provision "shell", inline: "systemctl set-default multi-user.target 2>&1", reboot: true
     end
 
     # Support git operations inside the VM. The file provisioner requires files to exist,
