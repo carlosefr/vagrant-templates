@@ -1,0 +1,93 @@
+# -*- mode: ruby -*-
+#
+# Vagrantfile - One development machine to rule them all.
+#
+
+
+kali_release = "2022.3"
+
+# This is the minimum customization necessary but, to tailor this configuration
+# to a specific project, you should also edit the "vagrant/provision.sh" script...
+vm_name = "Kali Linux (#{kali_release})"
+vm_hostname = "vagrant-kali"
+vm_size = {"cpus" => 1, "memory" => 1024}
+vm_gui = false
+
+vm_box = "kalilinux/rolling"
+vm_box_version = "~> #{kali_release}.0"  # ...rolling release, lock to minor.
+
+# Location of the external files used by this script...
+vagrant_assets = File.dirname(__FILE__) + "/vagrant"
+
+
+# Someone may need to (locally) override the VM size for some specific task...
+vm_size_override = File.dirname(__FILE__) + "/.vagrant_size.json"
+if File.exists?(vm_size_override)
+    vm_size = JSON.parse(File.read(vm_size_override))
+end
+
+
+Vagrant.configure("2") do |config|
+    config.vm.box = vm_box
+    config.vm.box_version = vm_box_version.nil? ? vm_box_version : ">= 0"
+    config.vm.hostname = vm_hostname
+
+    config.ssh.forward_agent = true
+    config.ssh.keep_alive = true
+
+    if not vm_gui  # ...no point having the GUI consuming resources when running headless.
+        config.vm.provision "shell", inline: "systemctl set-default multi-user.target", reboot: true
+    end
+
+    # Support git operations inside the VM. The file provisioner requires files to exist,
+    # which in this case is a good thing as it prevents commits attributed to wrong users...
+    config.vm.provision "file", source: "~/.gitconfig", destination: "~/.gitconfig"
+
+    # Make the local user's SSH key reachable by the main provisioning script...
+    config.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "/tmp/id_rsa.pub"
+
+    # Perform base-system customizations and install project-specific dependencies...
+    config.vm.provision "shell", path: "#{vagrant_assets}/provision.sh",
+                                 privileged: false  # ...run as the "vagrant" user.
+
+    # VirtualBox specific settings
+    config.vm.provider "virtualbox" do |vm, override|
+        vm.name = vm_name
+        vm.gui = vm_gui
+
+        vm.memory = vm_size["memory"]
+        vm.cpus = vm_size["cpus"]
+        vm.default_nic_type = "virtio"
+
+        # The guest additions are already built-in...
+        if Vagrant.has_plugin?("vagrant-vbguest")
+            override.vbguest.auto_update = false
+            override.vbguest.allow_downgrade = false
+        end
+
+        #
+        # Resolve names using the host's configured DNS resolvers, but hide their actual IP
+        # addresses from the guest (useful if they come from DHCP and are subject to change).
+        #
+        # It is sometimes useful to use "--natdnshostresolver1" instead, to use the host's
+        # stub resolver APIs (i.e. when using VPN software that hijacks DNS resolution), but
+        # beware that this comes with some caveats (e.g. musl doesn't deal with it very well).
+        #
+        vm.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+
+        # No need for audio in a server-type VM...
+        vm.customize ["modifyvm", :id, "--audio", "none"]
+
+        # Only effective when the GUI is enabled...
+        vm.customize ["setextradata", :id, "GUI/LastGuestSizeHint", "1200,720"]
+        vm.customize ["setextradata", :id, "GUI/ScaleFactor", "2"]  # ...for HiDPI/Retina displays.
+
+        # Expose the VM to the host instead of forwarding many ports individually
+        # for complex projects. The provisioning script will setup Avahi/mDNS to
+        # make the guest VM easily accessible through a "*.local" domain...
+        override.vm.network "private_network", type: "dhcp", name: "vboxnet0"
+
+        # Make the current directory visible (and editable) inside the VM...
+        override.vm.synced_folder ".", "/home/vagrant/shared"
+    end
+end
