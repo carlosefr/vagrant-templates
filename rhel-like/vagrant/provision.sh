@@ -1,6 +1,6 @@
 #!/bin/bash -eu
 #
-# Provision CentOS VMs (vagrant shell provisioner, CentOS >= 8).
+# Provision RHEL-like VMs (vagrant shell provisioner).
 #
 
 
@@ -10,34 +10,31 @@ if [[ "$(id -u)" != "$(id -u vagrant)" ]]; then
 fi
 
 
-echo "provision-v8.sh: Customizing the base system..."
+readonly OS_RELEASE="$(rpm -q --queryformat '%{VERSION}' "$(rpm -qf /etc/redhat-release)" | cut -d. -f1)"
+readonly OS_VARIANT="$(sed -E 's/^(.+)\s+release.*$/\1/' /etc/redhat-release)"
 
-readonly CENTOS_RELEASE="$(rpm -q --queryformat '%{VERSION}' "$(rpm -qf /etc/centos-release)" | cut -d. -f1)"
 
-sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial"
+echo "provision.sh: Customizing the base system (${OS_VARIANT} ${OS_RELEASE})..."
 
 sudo dnf -q clean expire-cache
 sudo dnf -q -y makecache
 
 # EPEL gives us some essential base-system extras...
-sudo dnf -q -y --nogpgcheck install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${CENTOS_RELEASE}.noarch.rpm" || true
-sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-${CENTOS_RELEASE}"
+sudo dnf -q -y --nogpgcheck install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${OS_RELEASE}.noarch.rpm" || true
+sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-${OS_RELEASE}"
 
 sudo dnf -q -y install \
-    avahi nss-mdns mlocate lsof iotop \
+    rsync avahi nss-mdns mlocate lsof iotop \
     htop nmap-ncat pv tree vim tmux ltrace strace \
     sysstat perf zip unzip bind-utils man-pages
 
 # Minor cleanup...
-sudo systemctl stop tuned.service firewalld.service
-sudo systemctl -q disable tuned.service firewalld.service
+sudo systemctl stop firewalld.service
+sudo systemctl -q disable firewalld.service
 
-# Set a local timezone (the default for CentOS boxes is EDT)...
+# Set a local timezone...
 sudo timedatectl set-timezone "Europe/Lisbon"
 echo "VM local timezone: $(timedatectl | awk '/[Tt]ime\s+zone:/ {print $3}')"
-
-sudo systemctl -q enable chronyd.service
-sudo systemctl start chronyd.service
 
 # This gives us an easly reachable ".local" name for the VM...
 sudo systemctl -q enable avahi-daemon.service
@@ -78,7 +75,7 @@ rsync -r --exclude=.DS_Store "${HOME}/shared/vagrant/skel/" "${HOME}/"
 echo -n | sudo tee /etc/motd >/dev/null
 
 
-echo "provision-v8.sh: Configuring custom repositories..."
+echo "provision.sh: Configuring custom repositories..."
 
 # NGINX mainline gives us an updated (but production-ready) version...
 sudo rpm --import "https://nginx.org/keys/nginx_signing.key"
@@ -105,12 +102,12 @@ priority=10
 module_hotfixes=1
 EOF
 
-# If this version of CentOS isn't supported yet, use packages intended for the previous one...
-if ! curl -sSL "https://download.docker.com/linux/centos/${CENTOS_RELEASE}/source/stable/Packages/" | cat | grep -q "\.src\.rpm"; then
-    echo "No upstream Docker CE packages for CentOS ${CENTOS_RELEASE}, using packages for CentOS $((CENTOS_RELEASE-1)) instead." >&2
-    sudo sed -i "s|/centos/\$releasever|/centos/$((CENTOS_RELEASE-1))|g" /etc/yum.repos.d/docker-ce-stable.repo
+# If this RHEL version isn't supported yet, use packages intended for the previous one...
+if ! curl -sSL "https://download.docker.com/linux/centos/${OS_RELEASE}/source/stable/Packages/" | cat | grep -q "\.src\.rpm"; then
+    echo "No upstream Docker CE packages for ${OS_VARIANT} ${OS_RELEASE}, using packages for ${OS_VARIANT} $((OS_RELEASE-1)) instead." >&2
+    sudo sed -i "s|/centos/\$releasever|/centos/$((OS_RELEASE-1))|g" /etc/yum.repos.d/docker-ce-stable.repo
 else  # ...reverse on reprovision.
-    sudo sed -i "s|/centos/$((CENTOS_RELEASE-1))|/centos/\$releasever|g" /etc/yum.repos.d/docker-ce-stable.repo
+    sudo sed -i "s|/centos/$((OS_RELEASE-1))|/centos/\$releasever|g" /etc/yum.repos.d/docker-ce-stable.repo
 fi
 
 
@@ -120,7 +117,7 @@ sudo dnf -q clean expire-cache
 sudo dnf -q -y makecache
 
 
-echo "provision-v8.sh: Running project-specific actions..."
+echo "provision.sh: Running project-specific actions..."
 
 # Install extra packages needed for the project...
 sudo dnf -q -y install \
@@ -130,7 +127,7 @@ sudo dnf -q -y install \
 # [...]
 
 
-echo "provision-v8.sh: Done!"
+echo "provision.sh: Done!"
 
 
 # vim: set expandtab ts=4 sw=4:

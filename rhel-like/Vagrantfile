@@ -2,27 +2,22 @@
 #
 # Vagrantfile - One development machine to rule them all.
 #
+# Meant for RHEL rebuilds (e.g. Rocky Linux, AlmaLinux) or CentOS Stream.
+#
 
 
 require 'json'
 
 
-# Provisioning might need updating for different CentOS releases, see
-# the provision scripts for details. Only CentOS 7 and 8 were tested...
-centos_release = "stream-8"
-
-centos_release_number = centos_release.match(/([0-9]+)$/)[1].to_i
+os_release = "9"
 
 # This is the minimum customization necessary but, to tailor this configuration
 # to a specific project, you should also edit the "vagrant/provision.sh" script...
-vm_name = "Generic CentOS #{centos_release_number}.x"
-vm_hostname = "vagrant-centos-#{centos_release_number}x"
+vm_name = "Generic Rocky Linux #{os_release}.x"
+vm_hostname = "vagrant-rocky-#{os_release}x"
 vm_size = {"cpus" => 1, "memory" => 1024}
 
-# Use a box with included guest additions, to avoid occasional provisioning problems.
-# Possible alternatives are the "bento/centos-#{centos_release}" box, on which this
-# default box is based, or the CentOS project's "centos/#{centos_release}" box...
-vm_box = "carlosefr/centos-#{centos_release}"
+vm_box = "carlosefr/rockylinux-#{os_release}"
 vm_box_version = nil
 
 # Location of the external files used by this script...
@@ -36,38 +31,8 @@ if File.exists?(vm_size_override)
 end
 
 
-# This workaround is needed during the brief period when a new CentOS point
-# release becomes available but the CentOS base box hasn't been updated yet.
-# It's also required if we choose to stick with some specific point release.
-begin
-    class FixGuestAdditions < VagrantVbguest::Installers::CentOS
-        def dependencies
-            packages = super
-
-            # If there's no "kernel-devel" package matching the running kernel in the
-            # default repositories, then the base box we're using doesn't match the
-            # latest CentOS release anymore and we have to look for it in the archives...
-            if communicate.test('test -f /etc/centos-release && ! yum -q info kernel-devel-`uname -r` &>/dev/null')
-                env.ui.warn("[#{vm.name}] Looking for the CentOS 'kernel-devel' package in the release archives...")
-                packages.sub!('kernel-devel-`uname -r`', 'http://mirror.centos.org/centos' \
-                                                         '/`grep -Po \'\b\d+\.[\d.]+\b\' /etc/centos-release`' \
-                                                         '/{os,updates}/`arch`/Packages/kernel-devel-`uname -r`.rpm')
-            end
-
-            packages
-        end
-    end
-
-    # Anything with priority over 5 overrides the default installer...
-    VagrantVbguest::Installer.register(FixGuestAdditions, 100)
-rescue NameError
-    # The "VagrantVbguest" class won't be available during the first pass,
-    # when vagrant is checking for required plugins and stuff like that...
-end
-
-
 Vagrant.configure(2) do |config|
-    builtin_guest_additions = vm_box.match(/^(?:carlosefr|bento)/)
+    builtin_guest_additions = vm_box.match(/^(?:carlosefr|bento|almalinux)/)
 
     if !builtin_guest_additions
         config.vagrant.plugins = ["vagrant-vbguest"]
@@ -88,7 +53,7 @@ Vagrant.configure(2) do |config|
     config.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "/tmp/id_rsa.pub"
 
     # Perform base-system customizations and install project-specific dependencies...
-    config.vm.provision "shell", path: "#{vagrant_assets}/provision-v#{centos_release_number >= 8 ? 8 : 7}.sh",
+    config.vm.provision "shell", path: "#{vagrant_assets}/provision.sh",
                                  privileged: false  # ...run as the "vagrant" user.
 
     config.ssh.forward_agent = true
