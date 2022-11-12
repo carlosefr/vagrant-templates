@@ -24,6 +24,9 @@ vm_name = "Generic Ubuntu #{ubuntu_release} (#{ubuntu_codenames[ubuntu_release]}
 vm_hostname = "vagrant-ubuntu-#{ubuntu_codenames[ubuntu_release]}"
 vm_size = {"cpus" => 1, "memory" => 1024}
 
+vm_box = "ubuntu/#{ubuntu_codenames[ubuntu_release]}64"
+vm_box_version = nil
+
 install_system_updates = false
 
 # Attach an extra disk if the VM defaults aren't enough...
@@ -43,7 +46,8 @@ end
 
 
 Vagrant.configure(2) do |config|
-    config.vm.box = "ubuntu/#{ubuntu_codenames[ubuntu_release]}64"
+    config.vm.box = vm_box
+    config.vm.box_version = vm_box_version.nil? ? vm_box_version : ">= 0"
     config.vm.hostname = vm_hostname
 
     # We prefer the shared folder to be inside the user's home (below)...
