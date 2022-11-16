@@ -50,7 +50,7 @@ sudo service avahi-daemon start || true
 echo "VM available from the host at: $(hostname).local"
 
 # Generate the initial "locate" DB...
-sudo $(ls -1 /etc/periodic/weekly/*.locate | head -1)
+sudo "$(find /etc/periodic/weekly -type f -name '*.locate' | head -1)"
 
 # If another (file) provisioner made the host user's credentials available
 # to us (see the "Vagrantfile" for details), let it use "scp" and stuff...
@@ -82,7 +82,7 @@ find "${HOME}/shared/" -print >/dev/null
 rsync -r --exclude=.DS_Store "${HOME}/shared/vagrant/skel/" "${HOME}/"
 
 # Disable verbose messages on login...
-echo -n > "${HOME}/.hushlogin"
+printf "" > "${HOME}/.hushlogin"
 
 
 echo "provision.sh: Running project-specific actions..."
