@@ -18,7 +18,7 @@ You'll need [VirtualBox](https://www.virtualbox.org/) and [Vagrant](https://www.
 
 Starting with version 6.1.28, VirtualBox restricts the address ranges usable in [host-only networks](https://www.virtualbox.org/manual/ch06.html#network_hostonly) which causes `vagrant up` to fail as it tries to create an host-only network using a disallowed address range.
 
-To work around this, the templates in this repository force `vagrant up` to use the `vboxnet0` network, **which must be created beforehand**. Go to `File -> Host Network Manager` in VirtualBox and create the `vboxnet0` network if it doesn't already exist, also making sure it has the DHCP server enabled (default).
+To work around this, the templates in this repository force `vagrant up` to use a host network called `vboxnet0` **which must be created beforehand**. Go to `File -> Host Network Manager` in VirtualBox and create the `vboxnet0` network if it doesn't already exist, also making sure it has the DHCP server enabled (default).
 
 ### Local Customization
 
