@@ -16,7 +16,7 @@ sudo pkg update -qf
 
 sudo pkg install -q -y \
     htop lsof ltrace bash curl \
-    pv tree screen tmux vim-console
+    pv tree screen tmux vim
 
 # Match the vagrant host's timezone...
 sudo tzsetup "${HOST_TIMEZONE:-'Europe/Lisbon'}"
@@ -70,6 +70,9 @@ sudo chsh -s /usr/local/bin/bash "${USER}"
 # Make "vagrant ssh" sessions more comfortable by tweaking the
 # configuration of some system utilities (eg. bash, vim, tmux)...
 rsync -r --exclude=.DS_Store "${HOME}/shared/vagrant/skel/" "${HOME}/"
+
+# Disable verbose messages on login...
+echo -n > "${HOME}/.hushlogin"
 
 
 echo "provision.sh: Running project-specific actions..."
