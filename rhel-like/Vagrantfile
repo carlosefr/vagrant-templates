@@ -92,6 +92,10 @@ Vagrant.configure(2) do |config|
         # make the guest VM easily accessible through a "*.local" domain...
         override.vm.network "private_network", type: "dhcp", name: "vboxnet0"
 
+        # Even though we set the default NIC type above, it doesn't seem to always apply...
+        vm.customize ["modifyvm", :id, "--nictype1", "virtio"]
+        vm.customize ["modifyvm", :id, "--nictype2", "virtio"]
+
         # Make the current directory visible (and editable) inside the VM...
         override.vm.synced_folder ".", "/home/vagrant/shared"
     end
