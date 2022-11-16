@@ -51,6 +51,7 @@ Vagrant.configure("2") do |config|
 
     # Perform base-system customizations and install project-specific dependencies...
     config.vm.provision "shell", path: "#{vagrant_assets}/provision.sh",
+                                 env: {"HOST_TIMEZONE" => Time.now.zone},
                                  privileged: false  # ...run as the "vagrant" user.
 
     # VirtualBox specific settings

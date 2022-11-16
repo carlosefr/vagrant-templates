@@ -18,8 +18,8 @@ sudo pkg install -q -y \
     htop lsof ltrace bash curl \
     pv tree screen tmux vim-console
 
-# Set a local timezone (the default for FreeBSD boxes is UTC)...
-sudo tzsetup "Europe/Lisbon"
+# Match the vagrant host's timezone...
+sudo tzsetup "${HOST_TIMEZONE:-'Europe/Lisbon'}"
 echo "VM local timezone: $(date +%Z)"
 
 if ! grep -q '^ *ntpd_enable="YES"' /etc/rc.conf; then

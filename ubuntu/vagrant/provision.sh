@@ -57,8 +57,8 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge command-not-found
 # Mop up...
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y autoremove --purge
 
-# Set a local timezone (the default for Ubuntu boxes is GMT)...
-sudo timedatectl set-timezone "Europe/Lisbon"
+# Match the vagrant host's timezone...
+sudo timedatectl set-timezone "${HOST_TIMEZONE:-'Europe/Lisbon'}"
 echo "VM local timezone: $(timedatectl | awk '/[Tt]ime\s+zone:/ {print $3}')"
 
 sudo systemctl -q enable systemd-timesyncd

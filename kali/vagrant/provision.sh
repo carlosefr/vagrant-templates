@@ -17,8 +17,8 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq update
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
     htop iotop pv ltrace strace moreutils
 
-# Set a local timezone (the default for Kali boxes is EDT)...
-sudo timedatectl set-timezone "Europe/Lisbon"
+# Match the vagrant host's timezone...
+sudo timedatectl set-timezone "${HOST_TIMEZONE:-'Europe/Lisbon'}"
 echo "VM local timezone: $(timedatectl | awk '/[Tt]ime\s+zone:/ {print $3}')"
 
 sudo systemctl -q enable systemd-timesyncd

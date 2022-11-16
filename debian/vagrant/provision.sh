@@ -25,8 +25,8 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge \
     wpasupplicant acpid
 
-# Set a local timezone (the default for Debian boxes is GMT)...
-sudo timedatectl set-timezone "Europe/Lisbon"
+# Match the vagrant host's timezone...
+sudo timedatectl set-timezone "${HOST_TIMEZONE:-'Europe/Lisbon'}"
 echo "VM local timezone: $(timedatectl | awk '/[Tt]ime +zone:/ {print $3}')"
 
 sudo systemctl -q enable systemd-timesyncd
