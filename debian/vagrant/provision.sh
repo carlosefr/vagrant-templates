@@ -26,7 +26,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge \
     wpasupplicant acpid
 
 # Match the vagrant host's timezone...
-sudo timedatectl set-timezone "${HOST_TIMEZONE:-'Europe/Lisbon'}"
+sudo timedatectl set-timezone "${HOST_TIMEZONE:-"Europe/Lisbon"}"
 echo "VM local timezone: $(timedatectl | awk '/[Tt]ime +zone:/ {print $3}')"
 
 sudo systemctl -q enable systemd-timesyncd

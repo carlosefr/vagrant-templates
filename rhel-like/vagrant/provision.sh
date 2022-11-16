@@ -33,7 +33,7 @@ sudo systemctl stop firewalld.service
 sudo systemctl -q disable firewalld.service
 
 # Match the vagrant host's timezone...
-sudo timedatectl set-timezone "${HOST_TIMEZONE:-'Europe/Lisbon'}"
+sudo timedatectl set-timezone "${HOST_TIMEZONE:-"Europe/Lisbon"}"
 echo "VM local timezone: $(timedatectl | awk '/[Tt]ime\s+zone:/ {print $3}')"
 
 # This gives us an easly reachable ".local" name for the VM...

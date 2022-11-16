@@ -19,7 +19,7 @@ sudo pkg install -q -y \
     pv tree screen tmux vim
 
 # Match the vagrant host's timezone...
-sudo tzsetup "${HOST_TIMEZONE:-'Europe/Lisbon'}"
+sudo tzsetup "${HOST_TIMEZONE:-"Europe/Lisbon"}"
 echo "VM local timezone: $(date +%Z)"
 
 if ! grep -q '^ *ntpd_enable="YES"' /etc/rc.conf; then

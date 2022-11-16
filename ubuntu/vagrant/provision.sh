@@ -58,7 +58,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge command-not-found
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y autoremove --purge
 
 # Match the vagrant host's timezone...
-sudo timedatectl set-timezone "${HOST_TIMEZONE:-'Europe/Lisbon'}"
+sudo timedatectl set-timezone "${HOST_TIMEZONE:-"Europe/Lisbon"}"
 echo "VM local timezone: $(timedatectl | awk '/[Tt]ime\s+zone:/ {print $3}')"
 
 sudo systemctl -q enable systemd-timesyncd
