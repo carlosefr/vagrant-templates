@@ -15,7 +15,7 @@ echo "provision.sh: Customizing the base system..."
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq update
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
-    htop iotop pv ltrace strace moreutils
+    htop iotop pv ltrace strace moreutils bvi
 
 # Match the vagrant host's timezone...
 sudo timedatectl set-timezone "${HOST_TIMEZONE:-'Europe/Lisbon'}"
