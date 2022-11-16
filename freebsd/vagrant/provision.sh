@@ -67,6 +67,16 @@ fi
 # I'm sorry, but the default shell annoys me...
 sudo chsh -s /usr/local/bin/bash "${USER}"
 
+#
+# BUG: With VirtualBox 7.0.2 (at least) the rsync command below confuses the shared
+#      folder: the "shared/vagrant/skel" directory disappears and its contents appear
+#      directly under "shared/vagrant" (only in the guest, not the host). This only
+#      happens during the initial provisioning and doesn't seem to affect Linux VMs.
+#
+# Traversing the whole shared directory structure prevents the bug from triggering...
+#
+find "${HOME}/shared/" -print >/dev/null
+
 # Make "vagrant ssh" sessions more comfortable by tweaking the
 # configuration of some system utilities (eg. bash, vim, tmux)...
 rsync -r --exclude=.DS_Store "${HOME}/shared/vagrant/skel/" "${HOME}/"
