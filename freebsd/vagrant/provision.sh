@@ -47,7 +47,6 @@ fi
 
 sudo service dbus start || true
 sudo service avahi-daemon start || true
-echo "VM available from the host at: $(hostname).local"
 
 # Generate the initial "locate" DB...
 sudo "$(find /etc/periodic/weekly -type f -name '*.locate' | head -1)"

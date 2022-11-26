@@ -39,7 +39,6 @@ echo "VM local timezone: $(timedatectl | awk '/[Tt]ime\s+zone:/ {print $3}')"
 # This gives us an easly reachable ".local" name for the VM...
 sudo systemctl -q enable avahi-daemon.service
 sudo systemctl start avahi-daemon.service
-echo "VM available from the host at: ${HOSTNAME}.local"
 
 # Prevent locale from being forwarded from the host, causing issues...
 if sudo grep -q '^AcceptEnv\s.*LC_' /etc/ssh/sshd_config; then

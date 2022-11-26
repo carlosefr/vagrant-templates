@@ -35,7 +35,6 @@ sudo systemctl start systemd-timesyncd
 # This gives us an easly reachable ".local" name for the VM...
 sudo systemctl -q enable avahi-daemon 2>/dev/null
 sudo systemctl start avahi-daemon
-echo "VM available from the host at: ${HOSTNAME}.local"
 
 # Prevent locale from being forwarded from the host, causing issues...
 if sudo grep -q '^AcceptEnv\s.*LC_' /etc/ssh/sshd_config; then

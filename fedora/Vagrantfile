@@ -56,6 +56,8 @@ Vagrant.configure(2) do |config|
                                  env: {"HOST_TIMEZONE" => Time.now.zone},
                                  privileged: false  # ...run as the "vagrant" user.
 
+    config.vm.post_up_message = "VM available from the host at: #{vm_hostname}.local"
+
     config.ssh.forward_agent = true
     config.ssh.keep_alive = true
 
