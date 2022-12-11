@@ -9,15 +9,22 @@
 require 'json'
 
 
+os_variant = "Rocky"
 os_release = "9"
 
 # This is the minimum customization necessary but, to tailor this configuration
 # to a specific project, you should also edit the "vagrant/provision.sh" script...
-vm_name = "Generic Rocky Linux #{os_release}.x"
-vm_hostname = "vagrant-rocky-#{os_release}x"
+vm_name = "Generic RHEL #{os_release}.x (#{os_variant})"
+vm_hostname = "vagrant-#{os_variant.downcase}-#{os_release}x"
 vm_size = {"cpus" => 1, "memory" => 1024}
 
-vm_box = "carlosefr/rockylinux-#{os_release}"
+os_boxes = {
+    "centos" => "carlosefr/centos-stream-#{os_release}",
+    "rocky" => "carlosefr/rockylinux-#{os_release}",  # ...the official box is 3x the size.
+    "alma" => "almalinux/#{os_release}",
+}
+
+vm_box = os_boxes[os_variant.downcase]
 vm_box_version = nil
 
 # Location of the external files used by this script...
@@ -32,7 +39,7 @@ end
 
 
 Vagrant.configure(2) do |config|
-    builtin_guest_additions = vm_box.match(/^(?:carlosefr|bento|almalinux)/)
+    builtin_guest_additions = vm_box.match(/^(?:carlosefr|bento|almalinux|rockylinux)/)
 
     if !builtin_guest_additions
         config.vagrant.plugins = ["vagrant-vbguest"]
