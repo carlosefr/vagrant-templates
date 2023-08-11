@@ -9,8 +9,8 @@ require 'json'
 
 # Provisioning might need updating for different Debian
 # releases, see the "provision.sh" script for details...
-debian_release = 11
-debian_codenames = {8 => "jessie", 9 => "stretch", 10 => "buster", 11 => "bullseye"}  # ...currently supported.
+debian_release = 12
+debian_codenames = {10 => "buster", 11 => "bullseye", 12 => "bookworm"}  # ...currently supported.
 
 
 # This is the minimum customization necessary but, to tailor this configuration
