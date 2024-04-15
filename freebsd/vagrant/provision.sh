@@ -53,14 +53,14 @@ sudo "$(find /etc/periodic/weekly -type f -name '*.locate' | head -1)"
 
 # If another (file) provisioner made the host user's credentials available
 # to us (see the "Vagrantfile" for details), let it use "scp" and stuff...
-if [ -f /tmp/id_rsa.pub ]; then
+if ls -1 /tmp | grep -qE '^id_[^.]+\.pub$'; then
     if [ ! -f "${HOME}/.ssh/.authorized_keys.vagrant" ]; then
         cp "${HOME}/.ssh/authorized_keys" "${HOME}/.ssh/.authorized_keys.vagrant"
     fi
 
-    cat "${HOME}/.ssh/.authorized_keys.vagrant" /tmp/id_rsa.pub > "${HOME}/.ssh/authorized_keys"
+    cat "${HOME}/.ssh/.authorized_keys.vagrant" /tmp/id_*.pub > "${HOME}/.ssh/authorized_keys"
     chmod 0600 "${HOME}/.ssh/authorized_keys"
-    rm -f /tmp/id_rsa.pub
+    rm -f /tmp/id_*.pub
 fi
 
 # I'm sorry, but the default shell annoys me...

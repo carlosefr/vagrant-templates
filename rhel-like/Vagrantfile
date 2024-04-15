@@ -52,12 +52,17 @@ Vagrant.configure(2) do |config|
     # The CentOS box defaults to using rsynced folders...
     config.vm.synced_folder ".", "/vagrant", disabled: true
 
-    # Support git operations inside the VM. The file provisioner requires files to exist,
-    # which in this case is a good thing as it prevents commits attributed to wrong users...
-    config.vm.provision "file", source: "~/.gitconfig", destination: "~/.gitconfig"
+    # Support git operations inside the VM...
+    if File::exist?(File::expand_path("~/.gitconfig"))
+        config.vm.provision "file", source: "~/.gitconfig", destination: "~/.gitconfig"
+    end
 
-    # Make the local user's SSH key reachable by the main provisioning script...
-    config.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "/tmp/id_rsa.pub"
+    # Make the local user's SSH public keys reachable by the main provisioning script...
+    Dir::chdir(File::expand_path("~/.ssh")) do
+        Dir::glob("*.pub").each do |pubkey|
+            config.vm.provision "file", source: File::join("~/.ssh", pubkey), destination: "/tmp/"
+        end
+    end
 
     # Perform base-system customizations and install project-specific dependencies...
     config.vm.provision "shell", path: "#{vagrant_assets}/provision.sh",
