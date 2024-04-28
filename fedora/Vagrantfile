@@ -9,7 +9,7 @@ require 'json'
 
 # Provisioning might need updating for different Fedora releases, see
 # the "provision.sh" script for details. Only Fedora 35 was tested...
-fedora_release = 37
+fedora_release = 40
 
 # This is the minimum customization necessary but, to tailor this configuration
 # to a specific project, you should also edit the "vagrant/provision.sh" script...
@@ -33,7 +33,7 @@ end
 
 
 Vagrant.configure(2) do |config|
-    config.vm.box = "fedora/#{fedora_release}-cloud-base"
+    config.vm.box = "bento/fedora-#{fedora_release}"
     config.vm.hostname = vm_hostname
 
     # The Fedora box defaults to using rsynced folders...

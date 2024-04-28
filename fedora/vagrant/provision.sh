@@ -33,7 +33,7 @@ sudo dnf -q makecache
 # This is required to avoid a conflict with "vim" below... :(
 sudo dnf -q -y upgrade vim-minimal
 sudo dnf -q -y install \
-    avahi mlocate lsof iotop htop nmap-ncat \
+    avahi plocate lsof iotop htop nmap-ncat \
     pv tree vim tmux ltrace strace \
     sysstat perf zip unzip bind-utils pciutils
 
@@ -50,6 +50,10 @@ echo "VM local timezone: $(timedatectl | awk '/[Tt]ime\s+zone:/ {print $3}')"
 sudo systemctl -q enable avahi-daemon.service
 sudo systemctl -q start avahi-daemon.service
 
+# Not necessary in this environment...
+sudo systemctl -q stop systemd-homed.service systemd-userdbd.socket systemd-userdbd.service
+sudo systemctl -q disable systemd-homed.service systemd-userdbd.socket systemd-userdbd.service
+
 # Prevent locale from being forwarded from the host, causing issues...
 if sudo grep -q '^AcceptEnv\s.*LC_' /etc/ssh/sshd_config; then
     sudo sed -i 's/^\(AcceptEnv\s.*LC_\)/#\1/' /etc/ssh/sshd_config
@@ -57,7 +61,7 @@ if sudo grep -q '^AcceptEnv\s.*LC_' /etc/ssh/sshd_config; then
 fi
 
 # Generate the initial "locate" DB...
-sudo systemctl start mlocate-updatedb.service
+sudo systemctl start plocate-updatedb.service
 
 # If another (file) provisioner made the host user's credentials available
 # to us (see the "Vagrantfile" for details), let it use "scp" and stuff...
@@ -78,6 +82,9 @@ fi
 # Make "vagrant ssh" sessions more comfortable by tweaking the
 # configuration of some system utilities (eg. bash, vim, tmux)...
 rsync -r --exclude=.DS_Store "${HOME}/shared/vagrant/skel/" "${HOME}/"
+
+# Disable verbose messages on login...
+echo -n > "${HOME}/.hushlogin"
 
 
 echo "provision.sh: Configuring custom repositories..."
