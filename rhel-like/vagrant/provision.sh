@@ -16,6 +16,13 @@ readonly OS_VARIANT="$(sed -E 's/^(.+)\s+release.*$/\1/' /etc/redhat-release)"
 
 echo "provision.sh: Customizing the base system (${OS_VARIANT} ${OS_RELEASE})..."
 
+# Some EPEL packages depend on the PowerTools/CRB repository...
+if [[ "$OS_RELEASE" -ge 9 ]]; then
+    sudo dnf config-manager --set-enabled crb
+else
+    sudo dnf config-manager --set-enabled powertools
+fi
+
 sudo dnf -q clean expire-cache
 sudo dnf -q -y makecache
 
@@ -26,7 +33,7 @@ sudo rpm --import "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-${OS_RELEASE}"
 sudo dnf -q -y install \
     rsync avahi nss-mdns mlocate lsof iotop \
     htop nmap-ncat pv tree vim tmux ltrace strace \
-    sysstat perf zip unzip bind-utils man-pages
+    sysstat perf zip unzip bind-utils man-pages moreutils
 
 # Minor cleanup...
 sudo systemctl stop firewalld.service
@@ -102,7 +109,7 @@ module_hotfixes=1
 EOF
 
 # If this RHEL version isn't supported yet, use packages intended for the previous one...
-if ! curl -sSL "https://download.docker.com/linux/centos/${OS_RELEASE}/source/stable/Packages/" | cat | grep -q "\.src\.rpm"; then
+if ! curl -sSL "https://download.docker.com/linux/centos/${OS_RELEASE}/source/stable/Packages/" | sponge | grep -qF ".src.rpm"; then
     echo "No upstream Docker CE packages for ${OS_VARIANT} ${OS_RELEASE}, using packages for ${OS_VARIANT} $((OS_RELEASE-1)) instead." >&2
     sudo sed -i "s|/centos/\$releasever|/centos/$((OS_RELEASE-1))|g" /etc/yum.repos.d/docker-ce-stable.repo
 else  # ...reverse on reprovision.
