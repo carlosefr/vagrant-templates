@@ -33,6 +33,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
     zip unzip net-tools moreutils
 
 # Minimize the number of running daemons (not needed in this headless VM)...
+sudo systemctl -q stop iscsid.socket iscsid.service >/dev/null 2>&1 || true
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge \
     lxcfs snapd open-iscsi mdadm accountsservice acpid \
     multipath-tools modemmanager udisks2 fwupd upower
