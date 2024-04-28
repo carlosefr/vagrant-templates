@@ -8,7 +8,7 @@ These are not minimal templates. They include configuration tweaks, **workaround
   * Add the necessary steps to provision your application inside the VM, maybe removing some redundant things.
   * Just use them as a reference to write your own minimal environments with tweaked settings.
 
-These templates usually support "official" vagrant boxes, but some default to my own (mostly [bento](http://chef.github.io/bento/)-based) boxes at [app.vagrantup.com/carlosefr](https://app.vagrantup.com/carlosefr) for convenience (i.e. pre-installed guest additions).
+Most of these templates default to [bento](http://chef.github.io/bento/)-based boxes for convenience (i.e. pre-installed guest additions).
 
 ## Dependencies
 
