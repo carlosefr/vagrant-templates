@@ -7,7 +7,7 @@
 require 'json'
 
 
-kali_release = "2022.3"
+kali_release = "2024.1"
 
 # This is the minimum customization necessary but, to tailor this configuration
 # to a specific project, you should also edit the "vagrant/provision.sh" script...
