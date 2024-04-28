@@ -35,7 +35,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
 # Minimize the number of running daemons (not needed in this headless VM)...
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge \
     lxcfs snapd open-iscsi mdadm accountsservice acpid \
-    multipath-tools modemmanager udisks2
+    multipath-tools modemmanager udisks2 fwupd upower
 
 # Same, but this needs to be explicitly stopped before uninstalling...
 if [[ -f /usr/lib/packagekit/packagekitd || -f /usr/libexec/packagekitd ]]; then
