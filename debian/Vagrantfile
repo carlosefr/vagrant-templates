@@ -22,7 +22,7 @@ vm_size = {"cpus" => 1, "memory" => 1024}
 # Use a box with included guest additions by default, to avoid occasional provisioning problems.
 # Possible alternatives are the "bento/debian-#{debian_release}" box, on which this default box
 # is based, or the Debian project's "debian/contrib-#{debian_codenames[debian_release]}64" box...
-vm_box = "carlosefr/debian-#{debian_release}"
+vm_box = "bento/debian-#{debian_release}"
 vm_box_version = nil
 
 # Location of the external files used by this script...

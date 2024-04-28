@@ -24,7 +24,12 @@ vm_name = "Generic Ubuntu #{ubuntu_release} (#{ubuntu_codenames[ubuntu_release]}
 vm_hostname = "vagrant-ubuntu-#{ubuntu_codenames[ubuntu_release]}"
 vm_size = {"cpus" => 1, "memory" => 1024}
 
-vm_box = "ubuntu/#{ubuntu_codenames[ubuntu_release]}64"
+if ubuntu_release.to_i >= 24
+    vm_box = "bento/ubuntu-#{ubuntu_release}"
+else
+    vm_box = "ubuntu/#{ubuntu_codenames[ubuntu_release]}64"
+end
+
 vm_box_version = nil
 
 install_system_updates = false

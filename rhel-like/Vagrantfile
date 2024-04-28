@@ -19,9 +19,9 @@ vm_hostname = "vagrant-#{os_variant.split.first.downcase.gsub('linux', '')}-#{os
 vm_size = {"cpus" => 1, "memory" => 1024}
 
 os_boxes = {
-    "CentOS Stream" => "carlosefr/centos-stream-#{os_release}",
-    "Rocky Linux" => "carlosefr/rockylinux-#{os_release}",
-    "AlmaLinux" => "carlosefr/almalinux-#{os_release}",
+    "CentOS Stream" => "bento/centos-stream-#{os_release}",
+    "Rocky Linux" => "bento/rockylinux-#{os_release}",
+    "AlmaLinux" => "bento/almalinux-#{os_release}",
 }
 
 vm_box = os_boxes[os_variant]
