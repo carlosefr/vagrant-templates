@@ -9,7 +9,7 @@ require 'json'
 
 # Provisioning might need updating for different FreeBSD
 # releases, see the "provision.sh" script for details...
-freebsd_release = "13.1-STABLE"
+freebsd_release = "13.3"
 
 # This is the minimum customization necessary but, to tailor this configuration
 # to a specific project, you should also edit the "vagrant/provision.sh" script...
@@ -30,7 +30,7 @@ end
 
 
 Vagrant.configure(2) do |config|
-    config.vm.box = "freebsd/FreeBSD-#{freebsd_release}"
+    config.vm.box = "bento/freebsd-#{freebsd_release}"
     config.vm.hostname = vm_hostname
 
     # Why isn't this included with the base box?!...

@@ -12,14 +12,25 @@ fi
 
 echo "provision.sh: Customizing the base system..."
 
+# VirtualBox's NAT resolver does not support SRV records, which "pkg" needs to find mirrors...
+if ! grep -qE '^\s*(prepend|supersede) domain-name-servers' /etc/dhclient.conf; then
+    echo "prepend domain-name-servers 1.1.1.1, 1.0.0.1;" | sudo tee -a /etc/dhclient.conf >/dev/null
+    sudo service dhclient restart em0
+fi
+
 sudo pkg update -qf
 
 sudo pkg install -q -y \
     htop lsof ltrace bash curl \
-    pv tree screen tmux vim
+    pv tree screen tmux vim rsync
 
-# Match the vagrant host's timezone...
-sudo tzsetup "${HOST_TIMEZONE:-"Europe/Lisbon"}" || true
+# Match the vagrant host's timezone if known (i.e. probably won't work on Windows hosts)...
+if [ -f "/usr/share/zoneinfo/${HOST_TIMEZONE:-"UTC"}" ]; then
+    sudo tzsetup "${HOST_TIMEZONE:-"UTC"}" || true
+else
+    sudo tzsetup UTC || true
+fi
+
 echo "VM local timezone: $(date +%Z)"
 
 if ! grep -q '^ *ntpd_enable="YES"' /etc/rc.conf; then
