@@ -136,7 +136,7 @@ Vagrant.configure(2) do |config|
         vm.customize ["modifyvm", :id, "--nictype2", "virtio"]
 
         # Make the current directory visible (and editable) inside the VM...
-        override.vm.synced_folder ".", "/home/vagrant/shared"
+        override.vm.synced_folder ".", "/home/vagrant/shared", SharedFoldersEnableSymlinksCreate: false
 
         if extra_disk_enabled && extra_disk_size_gb > 0
             # Figuring out where the VM resides seems to be a chicken-and-egg problem, so we use the assets directory...
