@@ -33,7 +33,7 @@ vagrant_assets = File.dirname(__FILE__) + "/vagrant"
 
 # Someone may need to (locally) override the VM size for some specific task...
 vm_size_override = File.dirname(__FILE__) + "/.vagrant_size.json"
-if File.exists?(vm_size_override)
+if File.exist?(vm_size_override)
     vm_size = JSON.parse(File.read(vm_size_override))
 end
 
