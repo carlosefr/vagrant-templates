@@ -18,7 +18,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -qq --allow-releaseinfo-change updat
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
     avahi-daemon plocate rsync lsof iotop htop \
-    ntpdate pv tree vim screen tmux ltrace strace \
+    ntpdate pv tree vim screen tmux strace \
     curl apt-transport-https dnsutils
 
 # Minimize the number of running daemons (not needed in this headless VM)...
