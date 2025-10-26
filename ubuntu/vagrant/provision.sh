@@ -28,13 +28,13 @@ fi
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq update
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
-    avahi-daemon plocate rsync lsof iotop htop ntpdate pv tree \
+    avahi-daemon rsync lsof iotop htop ntpdate pv tree \
     vim screen tmux ltrace strace curl apt-transport-https dnsutils \
     zip unzip net-tools moreutils
 
 # Minimize the number of running daemons (not needed in this headless VM)...
 sudo systemctl -q stop iscsid.socket iscsid.service >/dev/null 2>&1 || true
-sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge \
+sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y autoremove --purge \
     lxcfs snapd open-iscsi mdadm accountsservice acpid \
     multipath-tools modemmanager udisks2 fwupd upower
 
@@ -65,7 +65,7 @@ else
     sudo timedatectl set-timezone UTC || true
 fi
 
-echo "VM local timezone: $(timedatectl | awk '/[Tt]ime\s+zone:/ {print $3}')"
+echo "VM local timezone: $(timedatectl | awk '/[Tt]ime zone:/ {print $3}')"
 
 sudo systemctl -q enable systemd-timesyncd
 sudo systemctl start systemd-timesyncd
@@ -83,11 +83,6 @@ fi
 echo "PubkeyAcceptedKeyTypes +ssh-rsa" | sudo tee "/etc/ssh/sshd_config.d/vagrant_ssh_rsa.conf" >/dev/null
 
 sudo systemctl restart ssh
-
-# Generate the initial "locate" DB...
-if sudo test -x /etc/cron.daily/plocate; then
-    sudo /etc/cron.daily/plocate
-fi
 
 # Remove the spurious "you have mail" message on login...
 if [[ -s "/var/spool/mail/${USER}" ]]; then

@@ -17,13 +17,15 @@ readonly DISTRO_CODENAME="$(lsb_release -cs)"
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq --allow-releaseinfo-change update
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install \
-    avahi-daemon plocate rsync lsof iotop htop \
-    ntpdate pv tree vim screen tmux strace \
+    avahi-daemon gnupg rsync lsof iotop htop \
+    pv tree vim screen tmux strace \
     curl apt-transport-https dnsutils
 
 # Minimize the number of running daemons (not needed in this headless VM)...
-sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y purge \
-    wpasupplicant acpid
+sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y autoremove --purge \
+    wpasupplicant acpid bluetooth bluez
+
+sudo pkill mpris-proxy  # ...this stays around after removing its owning package (bluez).
 
 # Match the vagrant host's timezone if known (i.e. probably won't work on Windows hosts)...
 if timedatectl list-timezones | grep -qxF "${HOST_TIMEZONE:-"UTC"}"; then
@@ -32,7 +34,7 @@ else
     sudo timedatectl set-timezone UTC || true
 fi
 
-echo "VM local timezone: $(timedatectl | awk '/[Tt]ime\s+zone:/ {print $3}')"
+echo "VM local timezone: $(timedatectl | awk '/[Tt]ime zone:/ {print $3}')"
 
 sudo systemctl -q enable systemd-timesyncd
 sudo systemctl start systemd-timesyncd
@@ -45,11 +47,6 @@ sudo systemctl start avahi-daemon
 if sudo grep -q '^AcceptEnv\s.*LC_' /etc/ssh/sshd_config; then
     sudo sed -i 's/^\(AcceptEnv\s.*LC_\)/#\1/' /etc/ssh/sshd_config
     sudo systemctl restart ssh
-fi
-
-# Generate the initial "locate" DB...
-if sudo test -x /etc/cron.daily/plocate; then
-    sudo /etc/cron.daily/plocate
 fi
 
 # Remove the spurious "you have mail" message on login...
